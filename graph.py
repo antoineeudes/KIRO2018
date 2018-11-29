@@ -94,7 +94,7 @@ class Graph:
 
 
 
-    def display(self, save=True):
+    def display(self, save=False):
         X = np.zeros(self.nb_vertex)
         Y = np.zeros(self.nb_vertex)
 

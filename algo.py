@@ -25,7 +25,7 @@ def disturb_reverse(sol):
     id2 = random.randint(0, sol.len-1)
     s2.reverse(id1, id2)
     return s2
-    
+
 
 class SimulatedAnnealing:
     def __init__(self, s0, T):
