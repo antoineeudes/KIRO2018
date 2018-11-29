@@ -96,7 +96,7 @@ class SimulatedAnnealing_exp(SimulatedAnnealing):
         return False
 
 class SimulatedAnnealing_log(SimulatedAnnealing):
-    def __init__(self, s0, T0=0.1, C=None):
+    def __init__(self, s0, T0=100, C=None):
         self.T0 = T0 #Température initiale
         super().__init__(s0, T0)
         self.i = 1
@@ -159,6 +159,7 @@ if __name__ == '__main__':
     time0 = time.time()
 
     min_solution = S.compute()
+    S.write()
 
     print("Temps : {}".format(time.time()-time0))
     print("Cost : {}".format(min_solution.cost))
