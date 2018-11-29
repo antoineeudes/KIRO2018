@@ -78,8 +78,9 @@ class Solution:
         self.loops = []
         self.chains = [[]]
 
-        self.loops.append(self.nbLoops * [])
         self.nbLoops = ceil(float(len(self.graph.vertex))/30)
+        self.loops.append(self.nbLoops * [])
+
         if loops == None:
             for id, value in self.graph.vertex.items():
                 self.loops[0].append(id)
@@ -90,7 +91,7 @@ class Solution:
             self.chains = chains
 
     def __copy__(self):
-        print("chibre")
+        # print("chibre")
         return Solution(self.graph, copy.deepcopy(self.loops), copy.deepcopy(self.chains))
 
     def cost_edge(self, id1, id2):
