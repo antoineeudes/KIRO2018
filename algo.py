@@ -159,7 +159,7 @@ if __name__ == '__main__':
     time0 = time.time()
 
     min_solution = S.compute()
-    S.write()
+    min_solution.write()
 
     print("Temps : {}".format(time.time()-time0))
     print("Cost : {}".format(min_solution.cost))
