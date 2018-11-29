@@ -121,15 +121,10 @@ class Solution:
     def disturb(self):
         pass
 
-    def write():
-        suffix = ""
+    def write(self):
+        suffix = "1"
         file_already_exists = True
-        while file_already_exists:
-            try:
-                fichier = open(PATH_SOLUTION_FILE, 'r')
-            except:
-                suffix = "1"
-                PATH_SOLUTION_FILE = PATH_SOLUTION_FILE[:-3] + "suffix" + ".txt"
+        fichier = open(PATH_SOLUTION_FILE, 'w')
         for loop in self.loops:
             line = "b"
             for id in loop:
@@ -149,3 +144,4 @@ if __name__ == '__main__':
     g = Graph()
     sol = Solution(g)
     print(sol.cost())
+    sol.write()
