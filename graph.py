@@ -77,14 +77,6 @@ class Solution:
         for id, value in self.graph.vertex.items():
             self.loops[0].append(id)
 
-        print(self.loops)
-
-    def __str__(self):
-        string = ''
-        for id in self._path_index:
-            string += self.vertex[id].__str__() + '\n'
-        return string
-
     def __copy__(self):
         return Solution(self.graph)
 
@@ -130,7 +122,26 @@ class Solution:
         self.loops[idLoop][i], self.loops[idLoop][j] = self.loops[idLoop][j], self.loops[idLoop][i]
         
     def disturb(self):
-        pass
+        return self
+
+
+
+    def reverse(self, loop, i, j):
+        n = len(loop)
+        if i>=n or j>=n or i<0 or j<0:
+            raise IndexError("Indice en dehors des bornes")
+
+        i, j = min(i,j), max(i,j)
+        if i == 0 and j == n-1:
+            return None # Formule du cout non valide dans ce cas la
+        if j-i > n-(j-i):
+            i, j = j+1, i+n-1
+
+        for k in range((j+1-i)//2):
+            i1, i2 = (i+k)%n, (j-k)%n
+            loop[i1], loop[i2] = loop[i2], loop[i1]
+
+        return loop
 
     def write(self):
         file_already_exists = True

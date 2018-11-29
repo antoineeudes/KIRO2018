@@ -1,5 +1,3 @@
-from graph import Graph
-from algo import SimulatedAnnealing, SimulatedAnnealing_log, SimulatedAnnealing_exp, Solution
 from config import PATH_NODE_FILE, PATH_EDGE_FILE
 
 def getNumberNodes():
