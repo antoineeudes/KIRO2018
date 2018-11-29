@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 10:
+        if time.time()-self.start_time > 5:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -51,18 +51,20 @@ class SimulatedAnnealing:
         if(start_solution != None):
             self.min_solution = start_solution
 
-        current_solution = self.min_solution
+        current_solution = copy.copy(self.min_solution)
 
         self.start_time = time.time()
 
-        while not self.stopping_condition():
-            new_solution = current_solution.disturb()
+        while not self.stopping_condition() and not self.timeout():
+            new_solution = copy.copy(current_solution.disturb())
             p = random.random()
 
             if p < exp(-max(0,new_solution.cost()-current_solution.cost())/self.T):
-                current_solution = new_solution
+                current_solution = copy.copy(new_solution)
                 if current_solution.cost() < self.min_solution.cost():
-                    self.min_solution = current_solution
+                    self.min_solution = copy.copy(current_solution)
+            else:
+                print("Pas pris")
 
             if(show):
                 print("{} {}".format(self.min_solution.cost(), self.T))
@@ -163,5 +165,11 @@ if __name__ == '__main__':
     min_solution.write()
 
     print("Temps : {}".format(time.time()-time0))
-    print("Cost : {}".format(min_solution.cost))
-    print(min_solution)
+    print("Cost : {}".format(min_solution.cost()))
+
+    print("Loops")
+    for loop in min_solution.loops:
+        print(loop)
+    print("Chains")
+    for chain in min_solution.chains:
+        print(chain)

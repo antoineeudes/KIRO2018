@@ -72,22 +72,26 @@ class Graph:
         return self.vertex[key]
 
 class Solution:
-    def __init__(self, graph):
+    def __init__(self, graph, loops=None, chains=None):
         # La liste de vertex n'est jamais modifiée
         self.graph = graph
         self.loops = []
         self.chains = [[]]
 
-        self.nbLoops = ceil(float(len(self.graph.vertex))/30)
-
         self.loops.append(self.nbLoops * [])
+        self.nbLoops = ceil(float(len(self.graph.vertex))/30)
+        if loops == None:
+            for id, value in self.graph.vertex.items():
+                self.loops[0].append(id)
 
-
-        for id, value in self.graph.vertex.items():
-            self.loops[0].append(id)
+        if loops != None:
+            self.loops = loops
+        if chains != None:
+            self.chains = chains
 
     def __copy__(self):
-        return Solution(self.graph)
+        print("chibre")
+        return Solution(self.graph, copy.deepcopy(self.loops), copy.deepcopy(self.chains))
 
     def cost_edge(self, id1, id2):
         return self.graph.edges[id1, id2]
