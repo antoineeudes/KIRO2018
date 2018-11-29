@@ -85,6 +85,9 @@ class SimulatedAnnealing_exp(SimulatedAnnealing):
         return self.alpha*T
 
     # def stopping_condition(self):
+    #     return self.T<1
+
+    # def stopping_condition(self):
     #     if self.previous_solution == self.min_solution:
     #         self.nb_stab_iterations += 1
     #         # print("stable {}".format(self.nb_stab_iterations))

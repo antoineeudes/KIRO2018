@@ -233,6 +233,13 @@ class Solution:
         idLoop = random.randint(0, len(self.loops)-1)
         return idLoop
 
+    def getRandomIdChain(self):
+        try:
+            idChain = random.randint(0, len(self.chains)-1)
+        except:
+            return -1
+        return idChain
+
     def disturb_in_loop(self):
         new_solution = copy.copy(self)
         idLoop = self.getRandomIdLoop()
@@ -246,23 +253,41 @@ class Solution:
             return new_solution
 
     def disturb_between_loops(self):
-        idLoop1 = self.getRandomIdLoop()
-        idLoop2 = self.getRandomIdLoop()
+        new_solution = copy.copy(self)
+        idLoop1 = new_solution.getRandomIdLoop()
+        idLoop2 = new_solution.getRandomIdLoop()
         i = random.randint(0, len(self.loops[idLoop1])-1)
         j = random.randint(0, len(self.loops[idLoop2])-1)
-        self.loops[idLoop1][i],  self.loops[idLoop1][j] = self.loops[idLoop1][j], self.loops[idLoop1][i]
-        if not (self.is_loop_admissible(self.loops[idLoop1]) and self.is_loop_admissible(self.loops[idLoop2])):
-            self.loops[idLoop1][i],  self.loops[idLoop1][j] = self.loops[idLoop1][j], self.loops[idLoop1][i]
+        new_solution.loops[idLoop1][i],  new_solution.loops[idLoop2][j] = new_solution.loops[idLoop2][j], new_solution.loops[idLoop1][i]
+        if not (new_solution.is_loop_admissible(self.loops[idLoop1]) and new_solution.is_loop_admissible(self.loops[idLoop2])):
             print("pas_pris")
-            return self.disturb_between_loops
+            return self.disturb_between_loops()
         else:
-            return self
+            return new_solution
 
+    def disturb_in_chain(self):
+
+        idChain = self.getRandomIdChain()
+        if idChain == -1:
+            return self
+        if len(self.chains[idChain])<=1:
+            return self.disturb_in_chain()
+        new_solution = copy.copy(self)
+        i = random.randint(1, len(new_solution.chains[idChain])-1)
+        j = random.randint(1, len(new_solution.chains[idChain])-1)
+        new_solution.chains[idChain1][i],  new_solution.chains[idChain][j] = new_solution.chains[idChain][j], new_solution.chains[idChain][i]
+        if not (new_solution.is_chain_admissible(self.chains[idChain1]) and new_solution.is_chain_admissible(self.chains[idChain2])):
+            print("pas_pris")
+            return self.disturb_in_chain()
+        else:
+            return new_solution
 
     def disturb(self):
         r = random.random()
         if r<0.3:
             return self.disturb_in_loop()
+        elif r<0.7:
+            return self.disturb_between_loops()
         else:
             return self.disturb_between_chains()
 
@@ -279,6 +304,7 @@ class Solution:
 
         return new_solution
 
+            return self.disturb_in_chain()
     def reverse(self, idLoop, i, j):
         n = len(self.loops[idLoop])
         if i>=n or j>=n or i<0 or j<0:
