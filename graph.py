@@ -116,22 +116,20 @@ class Solution:
         return cost
 
     def swap(self):
-        idLoop = random.randin(0, len(self.loops))
+        idLoop = random.randint(0, len(self.loops))
         i = random.randint(0, len(self.loops[idLoop]))
         j = random.randint(0, len(self.loops[idLoop]))
         self.loops[idLoop][i], self.loops[idLoop][j] = self.loops[idLoop][j], self.loops[idLoop][i]
 
     def getRandomLoop(self):
-        idLoop = random.randin(0, len(self.loops))
+        idLoop = random.randint(0, len(self.loops))
         return self.loops[idLoop]
 
     def disturb(self):
-        loop = getRandomLoop()
-        i = random.randint(0, len(self.loops[idLoop]))
-        j = random.randint(0, len(self.loops[idLoop]))
+        loop = self.getRandomLoop()
+        i = random.randint(0, len(loop))
+        j = random.randint(0, len(loop))
         return self.reverse(loop, i, j)
-
-
 
     def reverse(self, loop, i, j):
         n = len(loop)
