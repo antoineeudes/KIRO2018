@@ -169,12 +169,16 @@ class Solution:
         file_already_exists = True
         fichier = open(PATH_SOLUTION_FILE, 'w')
         for loop in self.loops:
+            if loop == []:
+                break
             line = "b"
             for id in loop:
                 line += " " + str(id)
             line += "\n"
             fichier.write(line)
         for chain in self.chains:
+            if chain == []:
+                break
             line = "c"
             for id in chain:
                 line += " " + str(id)
