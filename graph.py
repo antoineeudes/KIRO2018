@@ -305,7 +305,7 @@ class Solution:
         if n > 6:
             return False
 
-        print(chain_elements)
+        # print(chain_elements)
 
         # Premier element est dans la boucle a laquelle la chiane appartient
         if not chain_elements[0] in self.loops[id_parent_loop]:
@@ -327,7 +327,7 @@ class Solution:
             for id_vertex in loop:
                 Seen[id_vertex] = True
 
-        for chain in self.chains:
+        for id_loop, chain in self.chains:
             for id_vertex in chain:
                 Seen[id_vertex] = True
 
@@ -379,8 +379,13 @@ class Solution:
             # print(chains[i][0])
             # print(self.loops[id_loop][id_vertex])
             chains[i][0] = id_loop#self.loops[id_loop][id_vertex]
+            # print(id_loop)
+            # print(id_vertex)
+
+            # print(self.loops[id_loop][id_vertex])
+            chains[i][1].append(self.loops[id_loop][id_vertex])
             # print(chains[i][0])
-            print(id_loop)
+            # print(id_loop)
 
         k = 0
         id_chain = 0
@@ -398,8 +403,8 @@ class Solution:
 
         self.chains = chains
 
-        print("CHAINS")
-        print(chains)
+        # print("CHAINS")
+        # print(chains)
 
 
 
@@ -439,21 +444,21 @@ if __name__ == '__main__':
     loop = sol.loops[0]
     #print(loop)
     sol.reverse(0, 2, 5)
-    print(loop)
-    print(sol.graph.id_distribs)
-    print(sol.graph.id_terminals)
-
-    print(sol.loops)
-    print(sol.chains)
-
-    if sol.isAdmissible():
-        print("Admissible")
-    else:
-        print("non admissible")
-
-    sol.init_random_admissible()
+    # print(loop)
+    # print(sol.graph.id_distribs)
+    # print(sol.graph.id_terminals)
+    #
     # print(sol.loops)
     # print(sol.chains)
+
+    # if sol.isAdmissible():
+    #     print("Admissible")
+    # else:
+    #     print("non admissible")
+
+    sol.init_random_admissible()
+    print(sol.loops)
+    print(sol.chains)
     print(sol.isAdmissible())
     print(sol.cost())
 
