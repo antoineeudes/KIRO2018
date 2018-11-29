@@ -121,12 +121,12 @@ class Solution:
         j = random.randint(0, len(self.loops[idLoop])-1)
         self.loops[idLoop][i], self.loops[idLoop][j] = self.loops[idLoop][j], self.loops[idLoop][i]
 
-    def getRandomLoop(self):
+    def getRandomIdLoop(self):
         idLoop = random.randint(0, len(self.loops)-1)
-        return self.loops[idLoop]
+        return idLoop
 
     def disturb(self):
-        loop = self.getRandomLoop()
+        loop = self.getRandomIdLoop()
         i = random.randint(0, len(loop)-1)
         j = random.randint(0, len(loop)-1)
         return self.reverse(loop, i, j)
