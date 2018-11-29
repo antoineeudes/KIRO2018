@@ -277,7 +277,7 @@ class Solution:
         j = random.randint(1, len(new_solution.chains[idChain])-1)
         new_solution.chains[idChain1][i],  new_solution.chains[idChain][j] = new_solution.chains[idChain][j], new_solution.chains[idChain][i]
         if not (new_solution.is_chain_admissible(self.chains[idChain1]) and new_solution.is_chain_admissible(self.chains[idChain2])):
-            print("pas_pris")
+            # print("pas_pris")
             return self.disturb_in_chain()
         else:
             return new_solution
@@ -292,11 +292,20 @@ class Solution:
             return self.disturb_between_chains()
         else:
             return self.disturb_in_chain()
-            
+
     def disturb_between_chains(self):
         new_solution = copy.copy(self)
-        id_chain1 = random.randint(0, len(self.chains)-1)
-        id_chain2 = random.randint(0, len(self.chains)-1)
+
+        id_chain1 = self.getRandomIdChain()
+        if id_chain1 == -1:
+            return self
+
+        id_chain2 = self.getRandomIdChain()
+        if id_chain2 == -1:
+            return self
+
+        # id_chain1 = random.randint(0, len(self.chains)-1)
+        # id_chain2 = random.randint(0, len(self.chains)-1)
         if len(self.chains[id_chain1][1]) <= 1 or len(self.chains[id_chain2][1]) <= 1:
             self.disturb_between_chains()
 
