@@ -1,7 +1,7 @@
 import random
 from matplotlib import pyplot as plt
 import numpy as np
-from math import sqrt
+from math import sqrt, ceil
 from math import exp
 import copy
 from config import PATH_REFERENCE_GRAPH, PATH_REFERENCE_GRAPH_FIGURE, PATH_SOLUTION_FILE
@@ -71,8 +71,13 @@ class Solution:
     def __init__(self, graph):
         # La liste de vertex n'est jamais modifiée
         self.graph = graph
-        self.loops = [[]]
+        self.loops = []
         self.chains = [[]]
+
+        self.nbLoops = ceil(float(len(self.graph.vertex))/30)
+
+        self.loops.append(self.nbLoops * [])
+
 
         for id, value in self.graph.vertex.items():
             self.loops[0].append(id)
@@ -137,7 +142,7 @@ class Solution:
             raise IndexError("Indice en dehors des bornes")
 
         i, j = min(i,j), max(i,j)
-        
+
         if j-i > n-(j-i):
             i, j = j+1, i+n-1
 
@@ -148,6 +153,10 @@ class Solution:
         return self
 
     def write(self):
+        for loop in self.loops:
+            while not self.graph.vertex[loop[0]].isDistrib():
+                loop.append(loop[0])
+                del(loop[0])
         file_already_exists = True
         fichier = open(PATH_SOLUTION_FILE, 'w')
         for loop in self.loops:
