@@ -99,7 +99,7 @@ class SimulatedAnnealing_exp(SimulatedAnnealing):
     #     return False
 
 class SimulatedAnnealing_log(SimulatedAnnealing):
-    def __init__(self, s0, T0=1, C=None):
+    def __init__(self, s0, T0=100, C=None):
         self.T0 = T0 #Température initiale
         super().__init__(s0, T0)
         self.i = 1
@@ -138,12 +138,12 @@ class SimulatedAnnealing_repeated(SimulatedAnnealing_exp):
         return self.T < 1
 
     def compute(self, show=True):
-        min_solution = self.min_solution
+        min_solution = copy.copy(self.min_solution)
         for i in range(self.nb_annealing):
             solution = super().compute(min_solution, show=False)
             self.T = self.T0 # On repart de la température initiale (pas fait automatiquement)
             if(solution.cost() < min_solution.cost()):
-                min_solution = solution
+                min_solution = copy.copy(solution)
             if(show):
                 print("{} {}".format(min_solution.cost(), i))
 
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     # S = SimulatedAnnealing_exp(min_solution)
     # S = SimulatedAnnealing_exp(min_solution)
     S = SimulatedAnnealing_log(min_solution)
-    # S = SimulatedAnnealing_repeated(min_solution, 100, 0.9, 1)
+    # S = SimulatedAnnealing_repeated(min_solution, 1000, 0.3, 5000)
 
     time0 = time.time()
 

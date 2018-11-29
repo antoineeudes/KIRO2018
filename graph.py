@@ -261,10 +261,23 @@ class Solution:
 
     def disturb(self):
         r = random.random()
-        if r<1:
+        if r<0.3:
             return self.disturb_in_loop()
         else:
-            return self.disturb_between_loops()
+            return self.disturb_between_chains()
+
+    def disturb_between_chains(self):
+        new_solution = copy.copy(self)
+        id_chain1 = random.randint(0, len(self.chains)-1)
+        id_chain2 = random.randint(0, len(self.chains)-1)
+        if len(self.chains[id_chain1][1]) <= 1 or len(self.chains[id_chain2][1]) <= 1:
+            self.disturb_between_chains()
+
+        id1 = random.randint(1, len(self.chains[id_chain1])-1)
+        id2 = random.randint(1, len(self.chains[id_chain2])-1)
+        new_solution.chains[id_chain1][1][id1], new_solution.chains[id_chain2][1][id2] = new_solution.chains[id_chain2][1][id2], new_solution.chains[id_chain1][1][id1]
+
+        return new_solution
 
     def reverse(self, idLoop, i, j):
         n = len(self.loops[idLoop])
