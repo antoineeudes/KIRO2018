@@ -415,7 +415,7 @@ class Solution:
         for loop in self.loops:
             while not self.graph.vertex[loop[0]].isDistrib():
                 loop.append(loop[0])
-                del[loop[0]]
+                del(loop[0])
         fichier = open(PATH_SOLUTION_FILE, 'w')
         for loop in self.loops:
             if loop == []:
