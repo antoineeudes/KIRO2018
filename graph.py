@@ -74,6 +74,11 @@ class Solution:
         self.loops = [[]]
         self.chains = [[]]
 
+        for id, value in self.graph.vertex.items():
+            self.loops[0].append(id)
+
+        print(self.loops)
+
     def __str__(self):
         string = ''
         for id in self._path_index:
@@ -105,7 +110,7 @@ class Solution:
 
         cost = 0
         for i in range(len(chain)-1):
-            cost += self.cost_edge(loop[i], loop[i+1])
+            cost += self.cost_edge(chain[i], chain[i+1])
 
         return cost
 
@@ -148,4 +153,4 @@ class Solution:
 if __name__ == '__main__':
     g = Graph()
     sol = Solution(g)
-    print(sol.cost())
+    print("cost : {}".format(sol.cost()))
