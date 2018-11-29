@@ -50,6 +50,8 @@ class Distrib(Vertex):
 class Graph:
     def __init__(self):
 
+        self.id_terminals = []
+        self.id_distribs = []
         self.vertex = dict()
         self.edges = dict()
 
@@ -58,8 +60,10 @@ class Graph:
         for id, x, y, code in Nodes:
             if code == 'terminal':
                 self.vertex[id] =  Terminal(id, x, y)
+                self.id_terminals.append(id)
             elif code == 'distribution':
                 self.vertex[id] =  Distrib(id, x, y)
+                self.id_distribs.append(id)
 
         #Parsing edges
         self.edges = getEdges()
@@ -111,7 +115,7 @@ class Solution:
         for loop in self.loops:
             cost += self.cost_loop(loop)
         for chain in self.chains:
-            cost == self.cost_chain(loop)
+            cost += self.cost_chain(chain)
 
         return cost
 
@@ -137,7 +141,7 @@ class Solution:
             raise IndexError("Indice en dehors des bornes")
 
         i, j = min(i,j), max(i,j)
-        
+
         if j-i > n-(j-i):
             i, j = j+1, i+n-1
 
@@ -173,4 +177,6 @@ if __name__ == '__main__':
     print(loop)
     sol.reverse(0, 2, 5)
     print(loop)
+    print(sol.id.id_distribs)
+    print(sol.id.id_terminals)
     sol.write()
