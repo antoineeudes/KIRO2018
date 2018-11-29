@@ -133,7 +133,7 @@ class Solution:
         # La liste de vertex n'est jamais modifiée
         self.graph = graph
         self.loops = [[]]
-        self.chains = [] # Contient des tupple (id, []) ou id est l'id de la boucle a laquelle la classe est ratachee
+        self.chains = [] # Contient des tupple [id, []] ou id est l'id de la boucle a laquelle la classe est ratachee
 
         self.nbLoops = ceil(float(len(self.graph.vertex))/30)
         print("nbLoops", self.nbLoops)
@@ -150,7 +150,7 @@ class Solution:
 
 
     def __copy__(self):
-        return Solution(self.graph)
+        return Solution(self.graph, copy.deepcopy(self.loops), copy.deepcopy(self.chains))
 
     # def clusterize_distributions(self, nbClusters):
     #     L = []
@@ -207,8 +207,8 @@ class Solution:
             return 0
 
         cost = 0
-        for i in range(len(chain)-1):
-            cost += self.cost_edge(chain[i][1], chain[i+1][1])
+        for i in range(len(chain[1])-1):
+            cost += self.cost_edge(chain[1][i], chain[1][i+1])
 
         return cost
 
@@ -286,7 +286,7 @@ class Solution:
             elif self.graph[id].isTerminal():
                 nb_terminals += 1
 
-        print("distrib {} terminals {}".format(nb_distribs, nb_terminals))
+        # print("distrib {} terminals {}".format(nb_distribs, nb_terminals))
         return nb_distribs >= 1 and nb_terminals <= 30
 
     def is_chain_admissible(self, chain):
@@ -299,6 +299,8 @@ class Solution:
         n = len(chain_elements)
         if n > 6:
             return False
+
+        print(chain_elements)
 
         # Premier element est dans la boucle a laquelle la chiane appartient
         if not chain_elements[0] in self.loops[id_parent_loop]:
@@ -357,10 +359,23 @@ class Solution:
                 nb_terminals_added += 1
                 k += 1
 
+        self.loops = loops
+
         #If remaining non affected terminals
         #we have to create chains
         nb_chains_to_create = ceil((nb_terminals-nb_terminals_added)/5.)
-        chains = [(-1, []) for i in range(nb_chains_to_create)]
+        chains = [[-1, []] for i in range(nb_chains_to_create)]
+
+        #Attributing chains to loops
+        for i in range(len(chains)):
+            id_loop = random.randint(0, len(self.loops)-1)
+            id_vertex = random.randint(0, len(self.loops[id_loop])-1)
+            # print(chains[i])
+            # print(chains[i][0])
+            # print(self.loops[id_loop][id_vertex])
+            chains[i][0] = id_loop#self.loops[id_loop][id_vertex]
+            # print(chains[i][0])
+            print(id_loop)
 
         k = 0
         id_chain = 0
@@ -372,19 +387,10 @@ class Solution:
                 k += 1
                 nb_terminals_added += 1
 
-                chains[id_chain].append(self.graph.id_terminals[nb_terminals_added])
-                k+=1
 
-        for i in range(len(chains)):
-            id_loop = random.randint(0, len(self.loops)-1)
-            id_vertex = random.randint(0, len(self.loops[id_loop])-1)
-            # print(chain[i])
-            # print(chain[0])
-            # print(self.loops[id_loop][id_vertex])
-            # chain[0] = self.loops[id_loop][id_vertex]
         #To do
 
-        self.loops = loops
+
         self.chains = chains
 
         print("CHAINS")
@@ -443,8 +449,8 @@ if __name__ == '__main__':
     sol.init_random_admissible()
     # print(sol.loops)
     # print(sol.chains)
-    # print(sol.isAdmissible())
-    # print(sol.cost())
+    print(sol.isAdmissible())
+    print(sol.cost())
 
     # sol.write()
 
