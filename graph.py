@@ -68,15 +68,15 @@ class Graph:
         #Parsing edges
         self.edges = getEdges()
 
-    def __getitem__(self, key):
-        return self.vertex[key]
+    def __getitem__(self, id):
+        return self.vertex[id]
 
 class Solution:
     def __init__(self, graph, loops=None, chains=None):
         # La liste de vertex n'est jamais modifiée
         self.graph = graph
         self.loops = []
-        self.chains = [[]]
+        self.chains = [] # Contient des tupple (id, []) ou id est l'id de la boucle a laquelle la classe est ratachee
 
         self.nbLoops = ceil(float(len(self.graph.vertex))/30)
         self.loops.append(self.nbLoops * [])
@@ -116,7 +116,7 @@ class Solution:
 
         cost = 0
         for i in range(len(chain)-1):
-            cost += self.cost_edge(chain[i], chain[i+1])
+            cost += self.cost_edge(chain[i][1], chain[i+1][1])
 
         return cost
 
@@ -161,6 +161,82 @@ class Solution:
 
         return self
 
+    def is_loop_admissible(self, loop):
+        if loop == []:
+            return True
+
+        nb_distribs = 0
+        nb_terminals = 0
+
+        for id in loop:
+            if self.graph[id].isDistrib():
+                nb_distribs += 1
+            elif self.graph[id].isTerminal():
+                nb_terminals += 1
+
+        # print("distrib {} terminals {}".format(nb_distribs, nb_terminals))
+        return nb_distribs >= 1 and nb_terminals <= 30
+
+    def is_chain_admissible(self, chain):
+        if chain == [] or chain[1] == []:
+            return True
+
+        id_parent_loop = chain[0]
+        chain_elements = chain[1]
+
+        n = len(chain_elements)
+        if n > 6:
+            return False
+
+        # Premier element est dans la boucle a laquelle la chiane appartient
+        if not chain_elements[0] in self.loops[id_parent_loop]:
+            return False
+
+        for i in range(1, n):
+            if chain_elements[i] in self.loops[id_parent_loop]:
+                return False
+
+        return True
+
+    def isAdmissible(self):
+        for loop in self.loops:
+            if not self.is_loop_admissible(loop):
+                return False
+        for chain in self.chains:
+            if not self.is_chain_admissible(chain):
+                return False
+
+        return True
+
+    def init_random_admissible(self):
+        nb_distribs = len(self.graph.id_distribs)
+        nb_terminals = len(self.graph.id_terminals)
+
+        loops = [[] for k in range(nb_distribs)]
+
+        nb_terminals_added = 0
+        # Add all distribs in different loops
+        for i in range(nb_distribs):
+            loops[i].append(self.graph.id_distribs[i])
+
+            k = 0
+            while k<30 and nb_terminals_added < nb_terminals:
+                loops[i].append(self.graph.id_terminals[nb_terminals_added])
+                nb_terminals_added += 1
+                k += 1
+
+        #If remaining non affected terminals
+        #we have to create chains
+
+        #To do
+
+        self.loops = loops
+
+
+
+
+
+
     def write(self):
         for loop in self.loops:
             while not self.graph.vertex[loop[0]].isDistrib():
@@ -170,15 +246,15 @@ class Solution:
         fichier = open(PATH_SOLUTION_FILE, 'w')
         for loop in self.loops:
             if loop == []:
-                break
+                continue
             line = "b"
             for id in loop:
                 line += " " + str(id)
             line += "\n"
             fichier.write(line)
         for chain in self.chains:
-            if chain == []:
-                break
+            if chain == [] or chain[1] == []:
+                continue
             line = "c"
             for id in chain:
                 line += " " + str(id)
@@ -195,6 +271,21 @@ if __name__ == '__main__':
     print(loop)
     sol.reverse(0, 2, 5)
     print(loop)
-    print(sol.id.id_distribs)
-    print(sol.id.id_terminals)
+    print(sol.graph.id_distribs)
+    print(sol.graph.id_terminals)
+
+    print(sol.loops)
+    print(sol.chains)
+
+    if sol.isAdmissible():
+        print("Admissible")
+    else:
+        print("non admissible")
+
+    sol.init_random_admissible()
+    print(sol.loops)
+    print(sol.chains)
+    print(sol.isAdmissible())
+    print(sol.cost())
+
     sol.write()

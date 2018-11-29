@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 10:
+        if time.time()-self.start_time > 5:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -75,7 +75,7 @@ class SimulatedAnnealing:
 
 
 class SimulatedAnnealing_exp(SimulatedAnnealing):
-    def __init__(self, s0, T=1000, alpha=0.9999):
+    def __init__(self, s0, T=100, alpha=0.9999):
         super().__init__(s0, T)
         self.alpha = alpha
         self.previous_solution = self.min_solution
