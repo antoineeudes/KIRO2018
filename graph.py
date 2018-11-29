@@ -48,32 +48,6 @@ class Graph:
         self._nb_vertex = 0
         self._distances = dict()
 
-        # for id in range(nb_vertex):
-        #     x = random.random()*width
-        #     y = random.random()*height
-        #     self._vertex.append(Vertex(x, y))
-        #
-        # self._distances = dict()
-        #
-        # for i in range(nb_vertex):
-        #     for j in range(i):
-        #         self._distances[i, j] = self._vertex[i].dist(self._vertex[j])
-        #
-        # for j in range(nb_vertex):
-        #     self._distances[nb_vertex, j] = self._vertex[0].dist(self._vertex[j])
-
-
-        # print(self._distances)
-        # self.relative_dist = []
-        #
-        # for i in range(nb_vertex):
-        #     temp = []
-        #     for j in range(nb_vertex):
-        #         temp.append(j)
-        #     # self[i].dist(self[j])
-        #     temp.sort(key=(lambda j, i0=i, vertex=self._vertex:vertex[i0].dist(vertex[j])))
-        #     self.relative_dist.append(temp)
-        #     # print(self._vertex[i].dist(self._vertex[temp[1]]))
 
     @property
     def width(self):
