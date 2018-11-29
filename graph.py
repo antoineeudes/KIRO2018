@@ -425,8 +425,7 @@ class Solution:
                 line += " " + str(id)
             line += "\n"
             fichier.write(line)
-            print("bite")
-        for chain in self.chains:
+        for id_loop, chain in self.chains:
             if chain == [] or chain[1] == []:
                 continue
             line = "c"
@@ -462,7 +461,7 @@ if __name__ == '__main__':
     print(sol.isAdmissible())
     print(sol.cost())
 
-    # sol.write()
+    sol.write()
 
     # g = Graph()
     # sol = Solution(g)
