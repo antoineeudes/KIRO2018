@@ -127,8 +127,8 @@ class Solution:
 
     def disturb(self):
         idLoop = self.getRandomIdLoop()
-        i = random.randint(0, len(idLoop)-1)
-        j = random.randint(0, len(idLoop)-1)
+        i = random.randint(0, len(self.loops[idLoop])-1)
+        j = random.randint(0, len(self.loops[idLoop])-1)
         return self.reverse(idLoop, i, j)
 
     def reverse(self, idLoop, i, j):
@@ -137,8 +137,7 @@ class Solution:
             raise IndexError("Indice en dehors des bornes")
 
         i, j = min(i,j), max(i,j)
-        if i == 0 and j == n-1:
-            return None # Formule du cout non valide dans ce cas la
+        
         if j-i > n-(j-i):
             i, j = j+1, i+n-1
 
