@@ -153,6 +153,7 @@ class SimulatedAnnealing_repeated(SimulatedAnnealing_exp):
 if __name__ == '__main__':
     g = graph.Graph()
     min_solution = Solution(g)
+    min_solution.init_random_admissible()
 
     # S = SimulatedAnnealing_exp(min_solution, 0.1, 0.9999)
     # S = SimulatedAnnealing_exp(min_solution)
@@ -160,6 +161,7 @@ if __name__ == '__main__':
     # S = SimulatedAnnealing_repeated(min_solution, 100, 0.9, 1)
 
     time0 = time.time()
+    
 
     min_solution = S.compute()
 

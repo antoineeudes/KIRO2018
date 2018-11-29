@@ -239,6 +239,7 @@ class Solution:
         j = random.randint(0, len(self.loops[idLoop])-1)
         new_solution = self.reverse(idLoop, i, j)
         if not self.is_loop_admissible(self.loops[idLoop]):
+            print("pas pris")
             return self.reverse(idLoop, i, j)
         return new_solution
 
@@ -405,10 +406,6 @@ class Solution:
 
         # print("CHAINS")
         # print(chains)
-
-
-
-
 
 
     def write(self):
