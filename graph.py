@@ -170,4 +170,8 @@ if __name__ == '__main__':
     g = Graph()
     sol = Solution(g)
     print("cost : {}".format(sol.cost()))
+    loop = sol.loops[0]
+    print(loop)
+    sol.reverse(loop, 2, 5)
+    print(loop)
     sol.write()
