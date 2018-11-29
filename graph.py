@@ -339,21 +339,34 @@ class Solution:
 
         #If remaining non affected terminals
         #we have to create chains
-        nb_chains_to_create : ceil(nb_terminals-nb_terminals_added/5.)
-        chains = [[] for i in range(nb_chains_to_create)]
+        nb_chains_to_create = ceil((nb_terminals-nb_terminals_added)/5.)
+        chains = [(-1, []) for i in range(nb_chains_to_create)]
 
         k = 0
         id_chain = 0
         while nb_terminals_added < nb_terminals:
                 if k >= 5:
                     k=0
+                    id_chain += 1
+                chains[id_chain][1].append(self.graph.id_terminals[nb_terminals_added])
+                k += 1
+                nb_terminals_added += 1
 
-                chains[id_chain].append(self.graph.id_terminals[nb_terminals_added])
-                k++
 
+        for i in range(len(chains)):
+            id_loop = random.randint(0, len(self.loops)-1)
+            id_vertex = random.randint(0, len(self.loops[id_loop])-1)
+            # print(chain[i])
+            # print(chain[0])
+            # print(self.loops[id_loop][id_vertex])
+            # chain[0] = self.loops[id_loop][id_vertex]
         #To do
 
         self.loops = loops
+        self.chains = chains
+
+        print("CHAINS")
+        print(chains)
 
 
 
@@ -406,12 +419,12 @@ if __name__ == '__main__':
         print("non admissible")
 
     sol.init_random_admissible()
-    print(sol.loops)
-    print(sol.chains)
-    print(sol.isAdmissible())
-    print(sol.cost())
+    # print(sol.loops)
+    # print(sol.chains)
+    # print(sol.isAdmissible())
+    # print(sol.cost())
 
-    sol.write()
+    # sol.write()
 
     # g = Graph()
     # sol = Solution(g)
