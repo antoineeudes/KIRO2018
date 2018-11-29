@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 3:
+        if time.time()-self.start_time > 60:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -63,8 +63,8 @@ class SimulatedAnnealing:
                 current_solution = copy.copy(new_solution)
                 if current_solution.cost() < self.min_solution.cost():
                     self.min_solution = copy.copy(current_solution)
-            else:
-                print("Pas pris")
+            # else:
+            #     print("Pas pris")
 
             if(show):
                 print("{} {}".format(self.min_solution.cost(), self.T))
@@ -162,7 +162,7 @@ if __name__ == '__main__':
     # S = SimulatedAnnealing_repeated(min_solution, 100, 0.9, 1)
 
     time0 = time.time()
-    
+
 
     min_solution = S.compute()
 
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     for chain in min_solution.chains:
         print(chain)
     print("chibre")
-    # min_solution.write()
+    min_solution.write()
 
     print("chibre")
 
@@ -182,5 +182,6 @@ if __name__ == '__main__':
     print("CHAINS")
     print(min_solution.chains)
 
+    print("Is admissible : {}".format(min_solution.isAdmissible()))
     print("Temps : {}".format(time.time()-time0))
     print("Cost : {}".format(min_solution.cost()))

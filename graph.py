@@ -240,7 +240,7 @@ class Solution:
         j = random.randint(0, len(new_solution.loops[idLoop])-1)
         new_solution = new_solution.reverse(idLoop, i, j)
         if not new_solution.is_loop_admissible(new_solution.loops[idLoop]):
-            print("pas pris")
+            # print("pas pris")
             return self.disturb_in_loop()
         else:
             return new_solution
