@@ -132,16 +132,18 @@ class Solution:
     def __init__(self, graph, loops=None, chains=None):
         # La liste de vertex n'est jamais modifiée
         self.graph = graph
-        self.loops = [[]]
-        self.chains = [] # Contient des tupple [id, []] ou id est l'id de la boucle a laquelle la classe est ratachee
+        self.loops = []
+        self.chains = [] # Contient des tupple (id, []) ou id est l'id de la boucle a laquelle la classe est ratachee
 
         self.nbLoops = ceil(float(len(self.graph.vertex))/30)
-        print("nbLoops", self.nbLoops)
+        # print("nbLoops", self.nbLoops)
         # self.clusterize_distributions(self.nbLoops)
+        for i in range(self.nbLoops):
+            self.loops.append([])
 
         if loops == None:
             for id, value in self.graph.vertex.items():
-                self.loops[0].append(id)
+                self.loops[id//30].append(id)
 
         if loops != None:
             self.loops = loops
@@ -235,9 +237,10 @@ class Solution:
         idLoop = self.getRandomIdLoop()
         i = random.randint(0, len(self.loops[idLoop])-1)
         j = random.randint(0, len(self.loops[idLoop])-1)
-        self.reverse(idLoop, i, j)
+        new_solution = self.reverse(idLoop, i, j)
         if not self.is_loop_admissible(self.loops[idLoop]):
-            self.reverse(ifLoop, i, j)
+            return self.reverse(idLoop, i, j)
+        return new_solution
 
     def disturb_between_loops(self):
         idLoop1 = self.getRandomIdLoop()
@@ -247,15 +250,16 @@ class Solution:
         self.loops[idLoop1][i],  self.loops[idLoop1][j] = self.loops[idLoop1][j], self.loops[idLoop1][i]
         if not (self.is_loop_admissible(self.loops[idLoop1]) and self.is_loop_admissible(self.loops[idLoop2])):
             self.loops[idLoop1][i],  self.loops[idLoop1][j] = self.loops[idLoop1][j], self.loops[idLoop1][i]
+            return self
         return self
 
 
     def disturb(self):
         r = random.random()
-        if r<0.5:
-            self.disturb_in_loop()
+        if r<1:
+            return self.disturb_in_loop()
         else:
-            self.disturb_between_loops()
+            return self.disturb_between_loops()
 
     def reverse(self, idLoop, i, j):
         n = len(self.loops[idLoop])

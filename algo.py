@@ -75,7 +75,7 @@ class SimulatedAnnealing:
 
 
 class SimulatedAnnealing_exp(SimulatedAnnealing):
-    def __init__(self, s0, T=100, alpha=0.9999):
+    def __init__(self, s0, T=100, alpha=0.9):
         super().__init__(s0, T)
         self.alpha = alpha
         self.previous_solution = self.min_solution
@@ -134,8 +134,8 @@ class SimulatedAnnealing_repeated(SimulatedAnnealing_exp):
         self.T0 = T
         super().__init__(s0, T, alpha)
 
-    # def stopping_condition(self):
-    #     return self.T < 0.001
+    def stopping_condition(self):
+        return self.T < 1
 
     def compute(self, show=True):
         min_solution = self.min_solution
@@ -156,17 +156,17 @@ if __name__ == '__main__':
 
     # S = SimulatedAnnealing_exp(min_solution, 0.1, 0.9999)
     # S = SimulatedAnnealing_exp(min_solution)
-    S = SimulatedAnnealing_log(min_solution)
+    S = SimulatedAnnealing_repeated(min_solution, 1000, 0.9, 100)
     # S = SimulatedAnnealing_repeated(min_solution, 100, 0.9, 1)
 
     time0 = time.time()
 
     min_solution = S.compute()
 
-    print("Loops")
+    # print("Loops")
     for loop in min_solution.loops:
         print(loop)
-    print("Chains")
+    # print("Chains")
     for chain in min_solution.chains:
         print(chain)
 
