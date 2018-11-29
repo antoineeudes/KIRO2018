@@ -126,13 +126,13 @@ class Solution:
         return idLoop
 
     def disturb(self):
-        loop = self.getRandomIdLoop()
-        i = random.randint(0, len(loop)-1)
-        j = random.randint(0, len(loop)-1)
-        return self.reverse(loop, i, j)
+        idLoop = self.getRandomIdLoop()
+        i = random.randint(0, len(idLoop)-1)
+        j = random.randint(0, len(idLoop)-1)
+        return self.reverse(idLoop, i, j)
 
-    def reverse(self, loop, i, j):
-        n = len(loop)
+    def reverse(self, idLoop, i, j):
+        n = len(self.loops[idLoop])
         if i>=n or j>=n or i<0 or j<0:
             raise IndexError("Indice en dehors des bornes")
 
@@ -144,9 +144,9 @@ class Solution:
 
         for k in range((j+1-i)//2):
             i1, i2 = (i+k)%n, (j-k)%n
-            loop[i1], loop[i2] = loop[i2], loop[i1]
+            self.loops[idLoop][i1], self.loops[idLoop][i2] = self.loops[idLoop][i2], self.loops[idLoop][i1]
 
-        return loop
+        return self
 
     def write(self):
         file_already_exists = True
@@ -172,6 +172,6 @@ if __name__ == '__main__':
     print("cost : {}".format(sol.cost()))
     loop = sol.loops[0]
     print(loop)
-    sol.reverse(loop, 2, 5)
+    sol.reverse(0, 2, 5)
     print(loop)
     sol.write()
