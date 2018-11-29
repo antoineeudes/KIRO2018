@@ -4,7 +4,7 @@ import numpy as np
 from math import sqrt
 from math import exp
 import copy
-from config import PATH_REFERENCE_GRAPH, PATH_REFERENCE_GRAPH_FIGURE
+from config import PATH_REFERENCE_GRAPH, PATH_REFERENCE_GRAPH_FIGURE, PATH_SOLUTION_FILE
 
 nb_dist = 0
 
@@ -107,7 +107,7 @@ class Solution:
         # La liste de vertex n'est jamais modifiée
         self.graph = graph
         self.loops = [[]]
-        self.chain = [[]]
+        self.chains = [[]]
 
     def __str__(self):
         string = ''
@@ -133,22 +133,45 @@ class Solution:
     def disturb(self):
         pass
 
+    def write():
+        suffix = ""
+        file_already_exists = True
+        while file_already_exists:
+            try:
+                fichier = open(PATH_SOLUTION_FILE, 'r')
+            except:
+                suffix = "1"
+                PATH_SOLUTION_FILE = PATH_SOLUTION_FILE[:-3] + "suffix" + ".txt"
+        for loop in self.loops:
+            line = "b"
+            for id in loop:
+                line += " " + str(id)
+            line += "\n"
+            fichier.write(line)
+        for chain in self.chains:
+            line = "c"
+            for id in chain:
+                line += " " + str(id)
+            line += "\n"
+            fichier.write(line)
+        fichier.close()
+
 
 if __name__ == '__main__':
-    g = Graph()
-    g.randomize(1000)
-    V = Vertex(2, 4)
-    print(V)
-    #g.display()
-    list_of_vertex = []
-    for i in range(g.nb_vertex):
-        list_of_vertex.append(g[i])
-    sol = Solution(g)
-    print(sol)
-    print(sol.cost())
-    sol2 = sol.disturb()
-    print(sol2.cost())
-    sol3 = sol2.disturb()
-    print(sol3.cost())
-    sol4 = sol3.disturb()
-    print(sol4.cost())
+    # g = Graph()
+    # g.randomize(1000)
+    # V = Vertex(2, 4)
+    # print(V)
+    # #g.display()
+    # list_of_vertex = []
+    # for i in range(g.nb_vertex):
+    #     list_of_vertex.append(g[i])
+    # sol = Solution(g)
+    # print(sol)
+    # print(sol.cost())
+    # sol2 = sol.disturb()
+    # print(sol2.cost())
+    # sol3 = sol2.disturb()
+    # print(sol3.cost())
+    # sol4 = sol3.disturb()
+    # print(sol4.cost())
