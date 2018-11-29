@@ -5,32 +5,23 @@ from math import sqrt
 from math import exp
 import copy
 from config import PATH_REFERENCE_GRAPH, PATH_REFERENCE_GRAPH_FIGURE, PATH_SOLUTION_FILE
-
-nb_dist = 0
-
-
-# def real_cost(sol):
-#     s = 0
-#     for i in range(sol.len):
-#         s += sol.dist(i,i+1)
-#     return s
+from parser import *
 
 class Vertex:
-    def __init__(self, id x, y):
+    def __init__(self, id, x, y):
         self.id = id
         self._x = x
         self._y = y
+
     def __str__(self):
         return '<{}, {}, {}>'.format(self.id, self._x, self._y)
+
     @property
     def x(self):
         return self._x
     @property
     def y(self):
         return self._y
-    @property
-    def next_vertex(self):
-        return self._next_vertex
 
     def dist_euclid(self, other):
         return sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
@@ -63,44 +54,18 @@ class Graph:
         self.edges = dict()
 
         # Parsing graph
-        Nodes = getNodes(file_name)
+        Nodes = getNodes()
         for id, x, y, code in Nodes:
             if code == 'terminal':
-                vertex[id] =  Terminal(id, x, y)
+                self.vertex[id] =  Terminal(id, x, y)
             elif code == 'distribution':
-                vertex[id] =  Distrib(id, x, y)
+                self.vertex[id] =  Distrib(id, x, y)
 
         #Parsing edges
         self.edges = getEdges()
 
     def __getitem__(self, key):
         return self.vertex[key]
-
-    # def update_distance_dict(self):
-    #     for i in range(self.nb_vertex):
-    #         for j in range(i):
-    #             self._distances[i, j] = self._vertex[i].dist(self._vertex[j])
-    #
-    #     for j in range(self.nb_vertex):
-    #         self._distances[self.nb_vertex, j] = self._vertex[0].dist(self._vertex[j])
-
-
-    # def dist(self, i, j):
-    #     if i > j:
-    #         return self._distances[i,j]
-    #     elif i < j:
-    #         return self._distances[j,i]
-    #     else:
-    #         return 0
-
-    # def randomize(self, nb_vertex):
-    #     self._nb_vertex = nb_vertex
-    #     for id in range(nb_vertex):
-    #         x = random.random()*self.width
-    #         y = random.random()*self.height
-    #         self._vertex.append(Vertex(x, y))
-    #     self.update_distance_dict()
-
 
 class Solution:
     def __init__(self, graph):
@@ -122,13 +87,36 @@ class Solution:
         return self.graph.edges[id1, id2]
 
     def cost_loop(self, loop):
-        pass
+        '''Compute the cost of a given loop'''
+        if loop == []:
+            return 0
+
+        cost = self.cost_edge(loop[-1], loop[0])
+
+        for i in range(len(loop)-1):
+            cost += self.cost_edge(loop[i], loop[i+1])
+
+        return cost
 
     def cost_chain(self, chain):
-        pass
+        '''Compute the cost of a given chain'''
+        if chain == []:
+            return 0
+
+        cost = 0
+        for i in range(len(chain)-1):
+            cost += self.cost_edge(loop[i], loop[i+1])
+
+        return cost
 
     def cost(self):
-        pass
+        cost = 0
+        for loop in self.loops:
+            cost += self.cost_loop(loop)
+        for chain in self.chains:
+            cost == self.cost_chain(loop)
+
+        return cost
 
     def disturb(self):
         pass
@@ -158,20 +146,6 @@ class Solution:
 
 
 if __name__ == '__main__':
-    # g = Graph()
-    # g.randomize(1000)
-    # V = Vertex(2, 4)
-    # print(V)
-    # #g.display()
-    # list_of_vertex = []
-    # for i in range(g.nb_vertex):
-    #     list_of_vertex.append(g[i])
-    # sol = Solution(g)
-    # print(sol)
-    # print(sol.cost())
-    # sol2 = sol.disturb()
-    # print(sol2.cost())
-    # sol3 = sol2.disturb()
-    # print(sol3.cost())
-    # sol4 = sol3.disturb()
-    # print(sol4.cost())
+    g = Graph()
+    sol = Solution(g)
+    print(sol.cost())
