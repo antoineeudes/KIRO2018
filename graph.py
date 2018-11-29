@@ -231,11 +231,31 @@ class Solution:
         idLoop = random.randint(0, len(self.loops)-1)
         return idLoop
 
-    def disturb(self):
+    def disturb_in_loop(self):
         idLoop = self.getRandomIdLoop()
         i = random.randint(0, len(self.loops[idLoop])-1)
         j = random.randint(0, len(self.loops[idLoop])-1)
-        return self.reverse(idLoop, i, j)
+        self.reverse(idLoop, i, j)
+        if not self.is_loop_admissible(self.loops[idLoop]):
+            self.reverse(ifLoop, i, j)
+
+    def disturb_between_loops(self):
+        idLoop1 = self.getRandomIdLoop()
+        idLoop2 = self.getRandomIdLoop()
+        i = random.randint(0, len(self.loops[idLoop1])-1)
+        j = random.randint(0, len(self.loops[idLoop2])-1)
+        self.loops[idLoop1][i],  self.loops[idLoop1][j] = self.loops[idLoop1][j], self.loops[idLoop1][i]
+        if not (self.is_loop_admissible(self.loops[idLoop1]) and self.is_loop_admissible(self.loops[idLoop2])):
+            self.loops[idLoop1][i],  self.loops[idLoop1][j] = self.loops[idLoop1][j], self.loops[idLoop1][i]
+        return self
+
+
+    def disturb(self):
+        r = random.random()
+        if r<0.5:
+            self.disturb_in_loop()
+        else:
+            self.disturb_between_loops()
 
     def reverse(self, idLoop, i, j):
         n = len(self.loops[idLoop])
@@ -349,7 +369,7 @@ class Solution:
                     k=0
 
                 chains[id_chain].append(self.graph.id_terminals[nb_terminals_added])
-                k++
+                k+=1
 
         #To do
 
