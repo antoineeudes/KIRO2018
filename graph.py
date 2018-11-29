@@ -284,13 +284,15 @@ class Solution:
 
     def disturb(self):
         r = random.random()
-        if r<0.3:
+        if r<0.25:
             return self.disturb_in_loop()
-        elif r<0.7:
+        elif r<0.5:
             return self.disturb_between_loops()
-        else:
+        elif r<0.75:
             return self.disturb_between_chains()
-
+        else:
+            return self.disturb_in_chain()
+            
     def disturb_between_chains(self):
         new_solution = copy.copy(self)
         id_chain1 = random.randint(0, len(self.chains)-1)
@@ -304,7 +306,6 @@ class Solution:
 
         return new_solution
 
-            return self.disturb_in_chain()
     def reverse(self, idLoop, i, j):
         n = len(self.loops[idLoop])
         if i>=n or j>=n or i<0 or j<0:
