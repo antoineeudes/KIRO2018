@@ -7,6 +7,10 @@ import copy
 from config import PATH_REFERENCE_GRAPH, PATH_REFERENCE_GRAPH_FIGURE, PATH_SOLUTION_FILE
 from parser import *
 
+
+def distance2_euclidienne(terminal1_x, terminal1_y, terminal2_x, terminal2_y):
+    return (terminal1_x - terminal2_x)**2 + (terminal1_y - terminal2_y)**2
+
 class Vertex:
     def __init__(self, id, x, y):
         self.id = id
@@ -59,10 +63,10 @@ class Graph:
         Nodes = getNodes()
         for id, x, y, code in Nodes:
             if code == 'terminal':
-                self.vertex[id] =  Terminal(id, x, y)
+                self.vertex[id] = Terminal(id, float(x), float(y))
                 self.id_terminals.append(id)
             elif code == 'distribution':
-                self.vertex[id] =  Distrib(id, x, y)
+                self.vertex[id] = Distrib(id, float(x), float(y))
                 self.id_distribs.append(id)
 
         #Parsing edges
@@ -71,34 +75,113 @@ class Graph:
     def __getitem__(self, id):
         return self.vertex[id]
 
+def getMedian(L, graph):
+    # try:
+    #     len(L)
+    # except:
+    #     L = [L]
+    #     print(L)
+    s_x = 0
+    s_y = 0
+    nb_points = len(L)
+
+    for id in L:
+        s_x += graph.vertex[id].x
+        s_y += graph.vertex[id].y
+
+    return [float(s_x)/nb_points, float(s_y)/nb_points]
+
+def getMediansFromClusters(clusters, graph):
+    medians = []
+    for cluster in clusters:
+        medians.append(getMedian(cluster, graph))
+    return medians
+
+def getCluster(medians, terminal):
+    id_cluster = 0
+    distance_mini = float('inf')
+    #print("len medians", len(medians))
+
+    for i in range(len(medians)):
+        #print("iiiii = ", i)
+        distance = distance2_euclidienne(medians[i][0], medians[i][1], terminal.x, terminal.y)
+        if distance<distance_mini:
+            #print('chibre')
+            distance_mini = distance
+            id_cluster = i
+            #print('id_cluster', i)
+
+    return id_cluster
+
+
+def getClustersFromMedians(medians, id_terminals, graph):
+    #print("len medians = ", len(medians))
+    clusters = []
+    for i in range(len(medians)):
+        clusters.append([0])
+    #print(len(clusters))
+
+    for id in id_terminals:
+        #print("id cluster", getCluster(medians, graph.vertex[id]))
+        #print("len cluster", len(clusters))
+        clusters[getCluster(medians, graph.vertex[id])].append(id)
+    return clusters
+
+
 class Solution:
-    def __init__(self, graph, loops=None, chains=None):
+    def __init__(self, graph):
         # La liste de vertex n'est jamais modifiée
         self.graph = graph
         self.loops = []
         self.chains = [] # Contient des tupple (id, []) ou id est l'id de la boucle a laquelle la classe est ratachee
 
         self.nbLoops = ceil(float(len(self.graph.vertex))/30)
-        self.loops.append(self.nbLoops * [])
+        print("nbLoops", self.nbLoops)
+        self.clusterize_distributions(self.nbLoops)
 
-        if loops == None:
-            for id, value in self.graph.vertex.items():
-                self.loops[0].append(id)
-
-        if loops != None:
-            self.loops = loops
-        if chains != None:
-            self.chains = chains
 
     def __copy__(self):
-        # print("chibre")
-        return Solution(self.graph, copy.deepcopy(self.loops), copy.deepcopy(self.chains))
+        return Solution(self.graph)
+
+    def clusterize_distributions(self, nbClusters):
+        L = []
+        for i in range(nbClusters):
+            L.append([])
+        # print(L)
+
+        medians = nbClusters * [0]
+        nbDistrib = len(self.graph.id_terminals)
+        #print(nbDistrib)
+        for i in range(nbDistrib):
+            L[i//30].append(self.graph.id_terminals[i])
+            # print(L)
+            #print(len(medians))
+
+        for i in range(len(L)):
+            print(L[i])
+
+        for i in range(len(L)):
+
+            #print(L, i)
+            medians[i] = getMedian(L[i], self.graph)
+
+        for i in range(100):
+            print(i)
+
+            L = getClustersFromMedians(medians, self.graph.id_terminals, self.graph)
+            medians = getMediansFromClusters(L, self.graph)
+        self.loops = L
+
+        for ()
+
+
 
     def cost_edge(self, id1, id2):
         return self.graph.edges[id1, id2]
 
     def cost_loop(self, loop):
         '''Compute the cost of a given loop'''
+
         if loop == []:
             return 0
 
@@ -268,7 +351,7 @@ if __name__ == '__main__':
     sol = Solution(g)
     print("cost : {}".format(sol.cost()))
     loop = sol.loops[0]
-    print(loop)
+    #print(loop)
     sol.reverse(0, 2, 5)
     print(loop)
     print(sol.graph.id_distribs)
@@ -289,3 +372,11 @@ if __name__ == '__main__':
     print(sol.cost())
 
     sol.write()
+
+    # g = Graph()
+    # sol = Solution(g)
+    # print("cost : {}".format(sol.cost()))
+    # sol.clusterize_distributions(5)
+    # print(sol.id.id_distribs)
+    # print(sol.id.id_terminals)
+    # sol.write()
