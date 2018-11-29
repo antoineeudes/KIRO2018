@@ -129,50 +129,59 @@ def getClustersFromMedians(medians, id_terminals, graph):
 
 
 class Solution:
-    def __init__(self, graph):
+    def __init__(self, graph, loops=None, chains=None):
         # La liste de vertex n'est jamais modifiée
         self.graph = graph
-        self.loops = []
+        self.loops = [[]]
         self.chains = [] # Contient des tupple (id, []) ou id est l'id de la boucle a laquelle la classe est ratachee
 
         self.nbLoops = ceil(float(len(self.graph.vertex))/30)
         print("nbLoops", self.nbLoops)
-        self.clusterize_distributions(self.nbLoops)
+        # self.clusterize_distributions(self.nbLoops)
+
+        if loops == None:
+            for id, value in self.graph.vertex.items():
+                self.loops[0].append(id)
+
+        if loops != None:
+            self.loops = loops
+        if chains != None:
+            self.chains = chains
 
 
     def __copy__(self):
         return Solution(self.graph)
 
-    def clusterize_distributions(self, nbClusters):
-        L = []
-        for i in range(nbClusters):
-            L.append([])
-        # print(L)
-
-        medians = nbClusters * [0]
-        nbDistrib = len(self.graph.id_terminals)
-        #print(nbDistrib)
-        for i in range(nbDistrib):
-            L[i//30].append(self.graph.id_terminals[i])
-            # print(L)
-            #print(len(medians))
-
-        for i in range(len(L)):
-            print(L[i])
-
-        for i in range(len(L)):
-
-            #print(L, i)
-            medians[i] = getMedian(L[i], self.graph)
-
-        for i in range(100):
-            print(i)
-
-            L = getClustersFromMedians(medians, self.graph.id_terminals, self.graph)
-            medians = getMediansFromClusters(L, self.graph)
-        self.loops = L
-
-        for ()
+    # def clusterize_distributions(self, nbClusters):
+    #     L = []
+    #     for i in range(nbClusters):
+    #         L.append([])
+    #     # print(L)
+    #
+    #     medians = nbClusters * [0]
+    #     nbDistrib = len(self.graph.id_terminals)
+    #     #print(nbDistrib)
+    #     for i in range(nbDistrib):
+    #         L[i//30].append(self.graph.id_terminals[i])
+    #         # print(L)
+    #         #print(len(medians))
+    #
+    #     for i in range(len(L)):
+    #         print(L[i])
+    #
+    #     for i in range(len(L)):
+    #
+    #         #print(L, i)
+    #         medians[i] = getMedian(L[i], self.graph)
+    #
+    #     for i in range(100):
+    #         print(i)
+    #
+    #         L = getClustersFromMedians(medians, self.graph.id_terminals, self.graph)
+    #         medians = getMediansFromClusters(L, self.graph)
+    #     self.loops = L
+    #
+    #     for ()
 
 
 
@@ -257,7 +266,7 @@ class Solution:
             elif self.graph[id].isTerminal():
                 nb_terminals += 1
 
-        # print("distrib {} terminals {}".format(nb_distribs, nb_terminals))
+        print("distrib {} terminals {}".format(nb_distribs, nb_terminals))
         return nb_distribs >= 1 and nb_terminals <= 30
 
     def is_chain_admissible(self, chain):
@@ -281,6 +290,26 @@ class Solution:
 
         return True
 
+    def all_terminals_are_joined(self):
+        Seen = dict()
+
+        for id_terminal in self.graph.id_terminals:
+            Seen[id_terminal] = False
+
+        for loop in self.loops:
+            for id_vertex in loop:
+                Seen[id_vertex] = True
+
+        for chain in self.chains:
+            for id_vertex in chain:
+                Seen[id_vertex] = True
+
+        for key, seen in Seen.items():
+            if not seen:
+                return False
+
+        return True
+
     def isAdmissible(self):
         for loop in self.loops:
             if not self.is_loop_admissible(loop):
@@ -289,7 +318,7 @@ class Solution:
             if not self.is_chain_admissible(chain):
                 return False
 
-        return True
+        return self.all_terminals_are_joined()
 
     def init_random_admissible(self):
         nb_distribs = len(self.graph.id_distribs)
@@ -310,6 +339,17 @@ class Solution:
 
         #If remaining non affected terminals
         #we have to create chains
+        nb_chains_to_create : ceil(nb_terminals-nb_terminals_added/5.)
+        chains = [[] for i in range(nb_chains_to_create)]
+
+        k = 0
+        id_chain = 0
+        while nb_terminals_added < nb_terminals:
+                if k >= 5:
+                    k=0
+
+                chains[id_chain].append(self.graph.id_terminals[nb_terminals_added])
+                k++
 
         #To do
 
