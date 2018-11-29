@@ -172,6 +172,8 @@ class Solution:
             medians = getMediansFromClusters(L, self.graph)
         self.loops = L
 
+        for ()
+
 
 
     def cost_edge(self, id1, id2):

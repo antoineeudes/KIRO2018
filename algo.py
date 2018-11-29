@@ -51,18 +51,20 @@ class SimulatedAnnealing:
         if(start_solution != None):
             self.min_solution = start_solution
 
-        current_solution = self.min_solution
+        current_solution = copy.copy(self.min_solution)
 
         self.start_time = time.time()
 
-        while not self.stopping_condition():
-            new_solution = current_solution.disturb()
+        while not self.stopping_condition() and not self.timeout():
+            new_solution = copy.copy(current_solution.disturb())
             p = random.random()
 
             if p < exp(-max(0,new_solution.cost()-current_solution.cost())/self.T):
-                current_solution = new_solution
+                current_solution = copy.copy(new_solution)
                 if current_solution.cost() < self.min_solution.cost():
-                    self.min_solution = current_solution
+                    self.min_solution = copy.copy(current_solution)
+            else:
+                print("Pas pris")
 
             if(show):
                 print("{} {}".format(self.min_solution.cost(), self.T))
@@ -73,7 +75,7 @@ class SimulatedAnnealing:
 
 
 class SimulatedAnnealing_exp(SimulatedAnnealing):
-    def __init__(self, s0, T=0.1, alpha=0.9999):
+    def __init__(self, s0, T=1000, alpha=0.9999):
         super().__init__(s0, T)
         self.alpha = alpha
         self.previous_solution = self.min_solution
@@ -160,8 +162,15 @@ if __name__ == '__main__':
     time0 = time.time()
 
     min_solution = S.compute()
+
+    print("Loops")
+    for loop in min_solution.loops:
+        print(loop)
+    print("Chains")
+    for chain in min_solution.chains:
+        print(chain)
+
     min_solution.write()
 
     print("Temps : {}".format(time.time()-time0))
-    print("Cost : {}".format(min_solution.cost))
-    print(min_solution)
+    print("Cost : {}".format(min_solution.cost()))
