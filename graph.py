@@ -123,11 +123,16 @@ class Solution:
 
         return cost
 
+    def swap(self):
+        i = random.randint(0, len(self.graph.vertex))
+        j = random.randint(0, len(self.graph.vertex))
+        idLoop = random.randin(0, len(self.loops))
+        self.loops[idLoop][i], self.loops[idLoop][j] = self.loops[idLoop][j], self.loops[idLoop][i]
+        
     def disturb(self):
         pass
 
     def write(self):
-        suffix = "1"
         file_already_exists = True
         fichier = open(PATH_SOLUTION_FILE, 'w')
         for loop in self.loops:
