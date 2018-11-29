@@ -250,6 +250,7 @@ class Solution:
         self.loops[idLoop1][i],  self.loops[idLoop1][j] = self.loops[idLoop1][j], self.loops[idLoop1][i]
         if not (self.is_loop_admissible(self.loops[idLoop1]) and self.is_loop_admissible(self.loops[idLoop2])):
             self.loops[idLoop1][i],  self.loops[idLoop1][j] = self.loops[idLoop1][j], self.loops[idLoop1][i]
+            print("pas_pris")
             return self
         return self
 
@@ -409,8 +410,7 @@ class Solution:
         for loop in self.loops:
             while not self.graph.vertex[loop[0]].isDistrib():
                 loop.append(loop[0])
-                del(loop[0])
-        file_already_exists = True
+                del[loop[0]]
         fichier = open(PATH_SOLUTION_FILE, 'w')
         for loop in self.loops:
             if loop == []:
@@ -420,6 +420,7 @@ class Solution:
                 line += " " + str(id)
             line += "\n"
             fichier.write(line)
+            print("bite")
         for chain in self.chains:
             if chain == [] or chain[1] == []:
                 continue

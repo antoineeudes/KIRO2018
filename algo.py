@@ -156,7 +156,7 @@ if __name__ == '__main__':
 
     # S = SimulatedAnnealing_exp(min_solution, 0.1, 0.9999)
     # S = SimulatedAnnealing_exp(min_solution)
-    S = SimulatedAnnealing_repeated(min_solution, 1000, 0.9, 100)
+    S = SimulatedAnnealing_exp(min_solution)
     # S = SimulatedAnnealing_repeated(min_solution, 100, 0.9, 1)
 
     time0 = time.time()
@@ -169,8 +169,10 @@ if __name__ == '__main__':
     # print("Chains")
     for chain in min_solution.chains:
         print(chain)
-
+    print("chibre")
     min_solution.write()
+
+    print("chibre")
 
     print("Temps : {}".format(time.time()-time0))
     print("Cost : {}".format(min_solution.cost()))
