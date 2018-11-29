@@ -128,9 +128,9 @@ class Solution:
         j = random.randint(0, len(self.graph.vertex))
         idLoop = random.randin(0, len(self.loops))
         self.loops[idLoop][i], self.loops[idLoop][j] = self.loops[idLoop][j], self.loops[idLoop][i]
-        
+
     def disturb(self):
-        pass
+        return self.swap
 
     def write(self):
         file_already_exists = True
