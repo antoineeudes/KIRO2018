@@ -234,14 +234,16 @@ class Solution:
         return idLoop
 
     def disturb_in_loop(self):
+        new_solution = copy.copy(self)
         idLoop = self.getRandomIdLoop()
-        i = random.randint(0, len(self.loops[idLoop])-1)
-        j = random.randint(0, len(self.loops[idLoop])-1)
-        new_solution = self.reverse(idLoop, i, j)
-        if not self.is_loop_admissible(self.loops[idLoop]):
+        i = random.randint(0, len(new_solution.loops[idLoop])-1)
+        j = random.randint(0, len(new_solution.loops[idLoop])-1)
+        new_solution = new_solution.reverse(idLoop, i, j)
+        if not new_solution.is_loop_admissible(new_solution.loops[idLoop]):
             print("pas pris")
-            return self.reverse(idLoop, i, j)
-        return new_solution
+            return self.disturb_in_loop()
+        else:
+            return new_solution
 
     def disturb_between_loops(self):
         idLoop1 = self.getRandomIdLoop()
@@ -252,8 +254,9 @@ class Solution:
         if not (self.is_loop_admissible(self.loops[idLoop1]) and self.is_loop_admissible(self.loops[idLoop2])):
             self.loops[idLoop1][i],  self.loops[idLoop1][j] = self.loops[idLoop1][j], self.loops[idLoop1][i]
             print("pas_pris")
+            return self.disturb_between_loops
+        else:
             return self
-        return self
 
 
     def disturb(self):
