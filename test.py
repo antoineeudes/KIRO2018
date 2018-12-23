@@ -2,6 +2,7 @@ from algo import *
 import graph
 from graph import Graph, Solution
 import unittest
+import copy
 
 def is_cycle(tab):
     seen = dict()
@@ -13,33 +14,39 @@ def is_cycle(tab):
 
 class TestStringMethods(unittest.TestCase):
     def setUp(self):
-        self.graph = Graph(100)
+        self.graph = graph.Graph()
         self.sol = Solution(self.graph)
+        self.sol.heuristique()
 
-    def test_disturbs(self):
-        sol = disturb(self.sol)
-        sol2 = disturb2(self.sol)
-        sol3 = disturb3(self.sol)
-        sol4 = disturb4(self.sol)
-        for i in range(10):
-            sol = disturb(sol)
-            sol2 = disturb2(sol2)
-            sol3 = disturb3(sol3)
-            sol4 = disturb3(sol4)
-        self.assertTrue(is_cycle(sol._path_index))
-        self.assertTrue(is_cycle(sol2._path_index))
-        self.assertTrue(is_cycle(sol3._path_index))
-        self.assertTrue(is_cycle(sol4._path_index))
-
-    def test_cost_with_reverse(self):
+    def test_disturb_in_loop(self):
         sol = copy.copy(self.sol)
-        for i in range(10000):
-            id1 = random.randint(0, sol.len-1)
-            id2 = random.randint(0, sol.len-1)
-            sol.reverse(id1, id2)
-            diff = abs(sol.cost()-graph.real_cost(sol))
-            print("{} {} {}".format(id1, id2, diff))
-            self.assertTrue(diff<1e-5)
+        for i in range(1000):
+            sol = sol.disturb_in_loop()
+        self.assertTrue(sol.isAdmissible())
+
+    def test_disturb_between_loops(self):
+        sol = copy.copy(self.sol)
+        for i in range(1000):
+            sol = sol.disturb_between_loops()
+        self.assertTrue(sol.isAdmissible())
+
+    def test_disturb_in_chain(self):
+        sol = copy.copy(self.sol)
+        for i in range(1000):
+            sol = sol.disturb_in_chain()
+        self.assertTrue(sol.isAdmissible())
+
+    def test_disturb_between_chains(self):
+        sol = copy.copy(self.sol)
+        for i in range(1000):
+            sol = sol.disturb_between_chains()
+        self.assertTrue(sol.isAdmissible())
+
+    def test_disturb(self):
+        sol = copy.copy(self.sol)
+        for i in range(1000):
+            sol = sol.disturb()
+        self.assertTrue(sol.isAdmissible())
 
 
 unittest.main()
