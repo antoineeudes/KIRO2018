@@ -157,6 +157,7 @@ class SimulatedAnnealing_repeated(SimulatedAnnealing_exp):
 if __name__ == '__main__':
     g = graph.Graph()
     min_solution = Solution(g)
+    min_solution.show()
     min_solution.heuristique()
     print("Is admissible : ", min_solution.isAdmissible())
 
@@ -172,7 +173,7 @@ if __name__ == '__main__':
     time0 = time.time()
 
 
-    min_solution = S.compute()
+    # min_solution = S.compute()
 
     print("Is admissible : {}".format(min_solution.isAdmissible()))
 

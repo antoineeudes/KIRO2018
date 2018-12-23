@@ -145,15 +145,15 @@ class Solution:
         self.loops = []
         self.chains = [] # Contient des tupple (id, []) ou id est l'id de la boucle a laquelle la classe est ratachee
 
-        self.nbLoops = ceil(float(len(self.graph.vertex))/30)
-        # print("nbLoops", self.nbLoops)
-        # self.clusterize_distributions(self.nbLoops)
-        for i in range(self.nbLoops):
-            self.loops.append([])
-
-        if loops == None:
-            for id, value in self.graph.vertex.items():
-                self.loops[id//30].append(id)
+        # self.nbLoops = ceil(float(len(self.graph.vertex))/30)
+        # # print("nbLoops", self.nbLoops)
+        # # self.clusterize_distributions(self.nbLoops)
+        # for i in range(self.nbLoops):
+        #     self.loops.append([])
+        #
+        # if loops == None:
+        #     for id, value in self.graph.vertex.items():
+        #         self.loops[id//30].append(id)
 
         if loops != None:
             self.loops = loops
@@ -365,17 +365,14 @@ class Solution:
         new_solution = copy.copy(self)
         i = random.randint(1, len(new_solution.chains[idChain])-1)
         j = random.randint(1, len(new_solution.chains[idChain])-1)
-<<<<<<< HEAD
         new_solution.chains[idChain][i],  new_solution.chains[idChain][j] = new_solution.chains[idChain][j], new_solution.chains[idChain][i]
         if not (new_solution.is_chain_admissible(new_solution.chains[idChain])):
             # print("pas_pris")
             return self
-=======
         new_solution.chains[idChain1][i],  new_solution.chains[idChain][j] = new_solution.chains[idChain][j], new_solution.chains[idChain][i]
         if not (new_solution.is_chain_admissible(self.chains[idChain1]) and new_solution.is_chain_admissible(self.chains[idChain2])):
             # print("pas_pris")
             return self.disturb_in_chain()
->>>>>>> 80aa71c6d7710a0691972920e6d28b3adddcb937
         else:
             return new_solution
 
@@ -399,22 +396,7 @@ class Solution:
         if len(self.chains[idChain1]) <=1 or len(self.chains[idChain2]):
             return self.disturb_in_chain()
         new_solution = copy.copy(self)
-<<<<<<< HEAD
         if len(self.chains[idChain1][1]) <= 1 or len(self.chains[idChain2][1]) <= 1:
-=======
-
-        id_chain1 = self.getRandomIdChain()
-        if id_chain1 == -1:
-            return self
-
-        id_chain2 = self.getRandomIdChain()
-        if id_chain2 == -1:
-            return self
-
-        # id_chain1 = random.randint(0, len(self.chains)-1)
-        # id_chain2 = random.randint(0, len(self.chains)-1)
-        if len(self.chains[id_chain1][1]) <= 1 or len(self.chains[id_chain2][1]) <= 1:
->>>>>>> 80aa71c6d7710a0691972920e6d28b3adddcb937
             self.disturb_between_chains()
 
         id1 = random.randint(1, len(self.chains[idChain1])-1)
@@ -621,7 +603,7 @@ class Solution:
                 id_node2 = loop[j]
                 x = [self.graph[id_node1].x, self.graph[id_node2].x]
                 y = [self.graph[id_node1].y, self.graph[id_node2].y]
-                plt.plot(x, y, marker="o", color='black')#colors[i%nb_colors])
+                plt.plot(x, y, marker=",", color='black')#colors[i%nb_colors])
 
         for i in range(len(self.chains)):
             id_node0, chain = self.chains[i]
@@ -629,13 +611,13 @@ class Solution:
                 continue
             x = [self.graph[id_node0].x, self.graph[chain[0]].x]
             y = [self.graph[id_node0].y, self.graph[chain[0]].y]
-            plt.plot(x, y, marker='o', color='red')
+            plt.plot(x, y, marker=',', color='red')
             for j in range(1, len(chain)):
                 id_node1 = chain[j-1]
                 id_node2 = chain[j]
                 x = [self.graph[id_node1].x, self.graph[id_node2].x]
                 y = [self.graph[id_node1].y, self.graph[id_node2].y]
-                plt.plot(x, y, marker='o', color='red')
+                plt.plot(x, y, marker=',', color='red')
 
         for id_terminal in self.graph.id_terminals:
             terminal = self.graph[id_terminal]
