@@ -7,6 +7,25 @@ import copy
 from config import PATH_REFERENCE_GRAPH, PATH_REFERENCE_GRAPH_FIGURE, PATH_SOLUTION_FILE
 from parser import *
 
+def closest_point_in_list(idPoint, listIds, graph):
+    distance_mini = float('inf')
+    ind_mini = 0
+    for id in listIds:
+        distance = graph.edges[idPoint, id]
+        if distance < distance_mini:
+            distance_mini = distance
+            ind_mini = id
+
+    return id
+
+
+def areDifferent(medians, new_medians):
+    n = len(medians)
+    for i in range(n):
+        if medians[i][0]!=new_medians[i][0] or medians[i][1]!=new_medians[i][1]:
+            return True
+    return False
+
 
 def distance2_euclidienne(terminal1_x, terminal1_y, terminal2_x, terminal2_y):
     return (terminal1_x - terminal2_x)**2 + (terminal1_y - terminal2_y)**2
@@ -76,19 +95,12 @@ class Graph:
         return self.vertex[id]
 
 def getMedian(L, graph):
-    # try:
-    #     len(L)
-    # except:
-    #     L = [L]
-    #     print(L)
     s_x = 0
     s_y = 0
     nb_points = len(L)
-
     for id in L:
         s_x += graph.vertex[id].x
         s_y += graph.vertex[id].y
-
     return [float(s_x)/nb_points, float(s_y)/nb_points]
 
 def getMediansFromClusters(clusters, graph):
@@ -97,14 +109,14 @@ def getMediansFromClusters(clusters, graph):
         medians.append(getMedian(cluster, graph))
     return medians
 
-def getCluster(medians, terminal):
+def getCluster(medians, vertex):
     id_cluster = 0
     distance_mini = float('inf')
     #print("len medians", len(medians))
 
     for i in range(len(medians)):
         #print("iiiii = ", i)
-        distance = distance2_euclidienne(medians[i][0], medians[i][1], terminal.x, terminal.y)
+        distance = distance2_euclidienne(medians[i][0], medians[i][1], vertex.x, vertex.y)
         if distance<distance_mini:
             #print('chibre')
             distance_mini = distance
@@ -114,17 +126,15 @@ def getCluster(medians, terminal):
     return id_cluster
 
 
-def getClustersFromMedians(medians, id_terminals, graph):
+def getClustersFromMedians(medians, graph):
     #print("len medians = ", len(medians))
     clusters = []
     for i in range(len(medians)):
-        clusters.append([0])
+        clusters.append([])
     #print(len(clusters))
 
-    for id in id_terminals:
-        #print("id cluster", getCluster(medians, graph.vertex[id]))
-        #print("len cluster", len(clusters))
-        clusters[getCluster(medians, graph.vertex[id])].append(id)
+    for id, vertex in graph.vertex.items():
+        clusters[getCluster(medians, vertex)].append(id)
     return clusters
 
 
@@ -185,7 +195,87 @@ class Solution:
     #
     #     for ()
 
+    def heuristique(self):
+        nbVertices = len(self.graph.vertex)
+        nbClusters = min(nbVertices//30, len(self.graph.id_distribs))
+        clusters = []
 
+        for i in range(nbClusters):
+            clusters.append([])
+
+        for id in range(30*nbClusters):
+            clusters[id//30].append(id)
+        for id in range(30*nbClusters, nbVertices):
+            clusters[id%nbClusters].append(id)
+
+
+        new_medians = getMediansFromClusters(clusters, self.graph)
+        medians = nbClusters * [[0, 0]]
+
+        while areDifferent(medians, new_medians):
+            medians = copy.deepcopy(new_medians)
+            clusters = getClustersFromMedians(new_medians, self.graph)
+            new_medians = getMediansFromClusters(clusters, self.graph)
+            print("computing")
+
+        print(clusters)
+        s = 0
+        for cluster in clusters:
+            s+=len(cluster)
+
+        print(s==nbVertices, "GOALLLLLL")
+
+
+        if nbClusters==len(self.graph.id_distribs):
+            available_distribs = []
+            nbDistribs = []
+            for i in range(nbClusters):
+                nbDistrib = 0
+                for j in range(len(clusters[i])):
+                    if self.graph.vertex[clusters[i][j]].isDistrib():
+                        nbDistrib += 1
+                        if nbDistrib > 1:
+                            available_distribs.append([i, j, clusters[i][j]])
+                nbDistribs.append(nbDistrib)
+            for i in range(nbClusters):
+                if nbDistribs[i]==0:
+                    print(available_distribs)
+                    clusters[i].insert(available_distribs[-1][-1], 0)
+                    del(clusters[available_distribs[-1][0]][available_distribs[-1][1]])
+                    del(available_distribs[-1])
+
+        s = 0
+        for cluster in clusters:
+            s+=len(cluster)
+
+        print(s==nbVertices, "GOALLLLLL")
+
+        self.loops = clusters
+        chains = []
+        points_in_chains = []
+        for i in range(nbClusters):
+            n_i = len(clusters[i])
+            if n_i > 30:
+                points_in_chains = clusters[i][30:]
+                nbChainsInLoop = ceil(len(points_in_chains)/4.)
+                for k in range(nbChainsInLoop):
+                    chains.append([i, [clusters[i][k]] + clusters[i][30+4*k:30+4*(k+1)]])
+                chains.append([i, [clusters[i][nbChainsInLoop]] + clusters[i][30+4*nbChainsInLoop:]])
+                for j in range(30, n_i):
+                    del(clusters[i][-1])
+
+        # chains = [[0, [clusters[0][0]] + points_in_chains]]
+
+
+        for i in range(nbClusters):
+            nbDistrib = 0
+            for j in range(len(clusters[i])):
+
+                if self.graph.vertex[clusters[i][j]].isDistrib():
+                    nbDistrib += 1
+            print(nbDistrib)
+        print(chains)
+        self.chains = chains
 
     def cost_edge(self, id1, id2):
         return self.graph.edges[id1, id2]
@@ -248,7 +338,7 @@ class Solution:
         new_solution = new_solution.reverse(idLoop, i, j)
         if not new_solution.is_loop_admissible(new_solution.loops[idLoop]):
             # print("pas pris")
-            return self.disturb_in_loop()
+            return self
         else:
             return new_solution
 
@@ -259,9 +349,9 @@ class Solution:
         i = random.randint(0, len(self.loops[idLoop1])-1)
         j = random.randint(0, len(self.loops[idLoop2])-1)
         new_solution.loops[idLoop1][i],  new_solution.loops[idLoop2][j] = new_solution.loops[idLoop2][j], new_solution.loops[idLoop1][i]
-        if not (new_solution.is_loop_admissible(self.loops[idLoop1]) and new_solution.is_loop_admissible(self.loops[idLoop2])):
-            print("pas_pris")
-            return self.disturb_between_loops()
+        if not (new_solution.is_loop_admissible(new_solution.loops[idLoop1]) and new_solution.is_loop_admissible(new_solution.loops[idLoop2])):
+            # print("pas_pris")
+            return self
         else:
             return new_solution
 
@@ -275,10 +365,10 @@ class Solution:
         new_solution = copy.copy(self)
         i = random.randint(1, len(new_solution.chains[idChain])-1)
         j = random.randint(1, len(new_solution.chains[idChain])-1)
-        new_solution.chains[idChain1][i],  new_solution.chains[idChain][j] = new_solution.chains[idChain][j], new_solution.chains[idChain][i]
-        if not (new_solution.is_chain_admissible(self.chains[idChain1]) and new_solution.is_chain_admissible(self.chains[idChain2])):
-            print("pas_pris")
-            return self.disturb_in_chain()
+        new_solution.chains[idChain][i],  new_solution.chains[idChain][j] = new_solution.chains[idChain][j], new_solution.chains[idChain][i]
+        if not (new_solution.is_chain_admissible(new_solution.chains[idChain])):
+            # print("pas_pris")
+            return self
         else:
             return new_solution
 
@@ -286,23 +376,28 @@ class Solution:
         r = random.random()
         if r<0.25:
             return self.disturb_in_loop()
-        elif r<0.5:
-            return self.disturb_between_loops()
-        elif r<0.75:
-            return self.disturb_between_chains()
+        # elif r<0.5:
         else:
-            return self.disturb_in_chain()
-            
+            return self.disturb_between_loops()
+        # elif r<0.75:
+        #     return self.disturb_between_chains()
+        # else:
+        #     return self.disturb_in_chain()
+
     def disturb_between_chains(self):
+        idChain1 = self.getRandomIdChain()
+        idChain2 = self.getRandomIdChain()
+        if idChain1 == -1 or idChain2 == -1:
+            return self
+        if len(self.chains[idChain1]) <=1 or len(self.chains[idChain2]):
+            return self.disturb_in_chain()
         new_solution = copy.copy(self)
-        id_chain1 = random.randint(0, len(self.chains)-1)
-        id_chain2 = random.randint(0, len(self.chains)-1)
-        if len(self.chains[id_chain1][1]) <= 1 or len(self.chains[id_chain2][1]) <= 1:
+        if len(self.chains[idChain1][1]) <= 1 or len(self.chains[idChain2][1]) <= 1:
             self.disturb_between_chains()
 
-        id1 = random.randint(1, len(self.chains[id_chain1])-1)
-        id2 = random.randint(1, len(self.chains[id_chain2])-1)
-        new_solution.chains[id_chain1][1][id1], new_solution.chains[id_chain2][1][id2] = new_solution.chains[id_chain2][1][id2], new_solution.chains[id_chain1][1][id1]
+        id1 = random.randint(1, len(self.chains[idChain1])-1)
+        id2 = random.randint(1, len(self.chains[idChain2])-1)
+        new_solution.chains[idChain1][1][id1], new_solution.chains[idChain2][1][id2] = new_solution.chains[idChain2][1][id2], new_solution.chains[idChain1][1][id1]
 
         return new_solution
 
@@ -347,16 +442,19 @@ class Solution:
 
         n = len(chain_elements)
         if n > 6:
+            # print("chibre")
             return False
 
         # print(chain_elements)
 
         # Premier element est dans la boucle a laquelle la chiane appartient
         if not chain_elements[0] in self.loops[id_parent_loop]:
+            # print("chibre")
             return False
 
         for i in range(1, n):
             if chain_elements[i] in self.loops[id_parent_loop]:
+                # print("chibre")
                 return False
 
         return True
@@ -377,6 +475,7 @@ class Solution:
 
         for key, seen in Seen.items():
             if not seen:
+                print(key)
                 return False
 
         return True
@@ -384,11 +483,13 @@ class Solution:
     def isAdmissible(self):
         for loop in self.loops:
             if not self.is_loop_admissible(loop):
+                # print("chibre")
                 return False
         for chain in self.chains:
             if not self.is_chain_admissible(chain):
+                # print("chibre")
                 return False
-
+        print(self.all_terminals_are_joined())
         return self.all_terminals_are_joined()
 
     def init_random_admissible(self):
@@ -450,12 +551,22 @@ class Solution:
         # print("CHAINS")
         # print(chains)
 
+    def prepare(self):
+        L = []
+        for chain in self.chains:
+            if len(chain[1]) > 1:
+                L.append(chain)
+        self.chains = L
 
     def write(self):
+        if not self.isAdmissible():
+            print("NOT ADMISSIBLE")
+            return None
         for loop in self.loops:
             while not self.graph.vertex[loop[0]].isDistrib():
                 loop.append(loop[0])
                 del(loop[0])
+
         fichier = open(PATH_SOLUTION_FILE, 'w')
         for loop in self.loops:
             if loop == []:
@@ -466,7 +577,7 @@ class Solution:
             line += "\n"
             fichier.write(line)
         for id_loop, chain in self.chains:
-            if chain == [] or chain[1] == []:
+            if chain == []:
                 continue
             line = "c"
             for id in chain:
@@ -483,6 +594,9 @@ if __name__ == '__main__':
     loop = sol.loops[0]
     #print(loop)
     sol.reverse(0, 2, 5)
+    sol.heuristique()
+    print(sol.isAdmissible())
+    print("new cost", sol.cost())
     # print(loop)
     # print(sol.graph.id_distribs)
     # print(sol.graph.id_terminals)
@@ -495,13 +609,13 @@ if __name__ == '__main__':
     # else:
     #     print("non admissible")
 
-    sol.init_random_admissible()
-    print(sol.loops)
-    print(sol.chains)
-    print(sol.isAdmissible())
-    print(sol.cost())
-
-    sol.write()
+    # sol.init_random_admissible()
+    # print(sol.loops)
+    # print(sol.chains)
+    # print(sol.isAdmissible())
+    # print(sol.cost())
+    #
+    # sol.write()
 
     # g = Graph()
     # sol = Solution(g)
