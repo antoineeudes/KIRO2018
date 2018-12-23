@@ -348,12 +348,15 @@ class Solution:
         idLoop2 = new_solution.getRandomIdLoop()
         i = random.randint(0, len(self.loops[idLoop1])-1)
         j = random.randint(0, len(self.loops[idLoop2])-1)
-        new_solution.loops[idLoop1][i],  new_solution.loops[idLoop2][j] = new_solution.loops[idLoop2][j], new_solution.loops[idLoop1][i]
+        if type(self.loops[idLoop1][i]) is type(self.loops[idLoop2][j]):
+            # Echange un distrib avec un distrib et un terminal avec un terminal
+            # Sinon peut rendre non admissible
+            new_solution.loops[idLoop1][i],  new_solution.loops[idLoop2][j] = new_solution.loops[idLoop2][j], new_solution.loops[idLoop1][i]
+            return new_solution
         if not (new_solution.is_loop_admissible(new_solution.loops[idLoop1]) and new_solution.is_loop_admissible(new_solution.loops[idLoop2])):
             # print("pas_pris")
             return self
-        else:
-            return new_solution
+        return self
 
     def disturb_in_chain(self):
 
@@ -369,10 +372,6 @@ class Solution:
         if not (new_solution.is_chain_admissible(new_solution.chains[idChain])):
             # print("pas_pris")
             return self
-        new_solution.chains[idChain1][i],  new_solution.chains[idChain][j] = new_solution.chains[idChain][j], new_solution.chains[idChain][i]
-        if not (new_solution.is_chain_admissible(self.chains[idChain1]) and new_solution.is_chain_admissible(self.chains[idChain2])):
-            # print("pas_pris")
-            return self.disturb_in_chain()
         else:
             return new_solution
 
