@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 40:
+        if time.time()-self.start_time > 5:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -117,19 +117,19 @@ class SimulatedAnnealing_log(SimulatedAnnealing):
         self.i += 1
         return self.C/log(self.i)
 
-    # def stopping_condition(self):
-    #     if self.previous_solution == self.min_solution:
-    #         self.nb_stab_iterations += 1
-    #     else:
-    #         self.nb_stab_iterations = 0
-    #
-    #     self.previous_solution = self.min_solution
-    #
-    #     if self.nb_stab_iterations >= 10000:
-    #         print("\n Stopped because stable \n")
-    #         self.nb_stab_iterations = 0
-    #         return True
-    #     return False
+    def stopping_condition(self):
+        if self.previous_solution == self.min_solution:
+            self.nb_stab_iterations += 1
+        else:
+            self.nb_stab_iterations = 0
+
+        self.previous_solution = self.min_solution
+
+        if self.nb_stab_iterations >= 5000:
+            print("\n Stopped because stable \n")
+            self.nb_stab_iterations = 0
+            return True
+        return False
 
 
 class SimulatedAnnealing_repeated(SimulatedAnnealing_exp):
@@ -166,10 +166,18 @@ if __name__ == '__main__':
     S = SimulatedAnnealing_log(min_solution)
     # S = SimulatedAnnealing_repeated(min_solution, 1000, 0.3, 5000)
 
+    min_solution.show()
+
+
     time0 = time.time()
 
 
     min_solution = S.compute()
+
+    print("Is admissible : {}".format(min_solution.isAdmissible()))
+
+    min_solution.show()
+
 
     # print("Loops")
     for loop in min_solution.loops:

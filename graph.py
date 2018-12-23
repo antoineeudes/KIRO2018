@@ -381,19 +381,15 @@ class Solution:
 
     def disturb(self):
         r = random.random()
-        if r<0.25:
+        if r<0.5:
             return self.disturb_in_loop()
-        # elif r<0.5:
-        else:
-<<<<<<< HEAD
+        elif r<1:
             return self.disturb_between_loops()
         # elif r<0.75:
         #     return self.disturb_between_chains()
         # else:
         #     return self.disturb_in_chain()
-=======
-            return self.disturb_in_chain()
->>>>>>> 80aa71c6d7710a0691972920e6d28b3adddcb937
+        return self
 
     def disturb_between_chains(self):
         idChain1 = self.getRandomIdChain()
@@ -589,10 +585,11 @@ class Solution:
             print("NOT ADMISSIBLE")
             return None
         for loop in self.loops:
-            while not self.graph.vertex[loop[0]].isDistrib():
+            k = 0
+            while k<len(loop) and not self.graph.vertex[loop[0]].isDistrib():
                 loop.append(loop[0])
                 del(loop[0])
-
+                k += 1
         fichier = open(PATH_SOLUTION_FILE, 'w')
         for loop in self.loops:
             if loop == []:
@@ -611,6 +608,43 @@ class Solution:
             line += "\n"
             fichier.write(line)
         fichier.close()
+
+    def show(self):
+        plt.clf()
+        # colors = "bgrcmk"
+        # nb_colors = len(colors)
+
+        for i in range(len(self.loops)):
+            loop = self.loops[i]
+            for j in range(len(loop)):
+                id_node1 = loop[j-1]
+                id_node2 = loop[j]
+                x = [self.graph[id_node1].x, self.graph[id_node2].x]
+                y = [self.graph[id_node1].y, self.graph[id_node2].y]
+                plt.plot(x, y, marker="o", color='black')#colors[i%nb_colors])
+
+        for i in range(len(self.chains)):
+            id_node0, chain = self.chains[i]
+            if len(chain) == 0:
+                continue
+            x = [self.graph[id_node0].x, self.graph[chain[0]].x]
+            y = [self.graph[id_node0].y, self.graph[chain[0]].y]
+            plt.plot(x, y, marker='o', color='red')
+            for j in range(1, len(chain)):
+                id_node1 = chain[j-1]
+                id_node2 = chain[j]
+                x = [self.graph[id_node1].x, self.graph[id_node2].x]
+                y = [self.graph[id_node1].y, self.graph[id_node2].y]
+                plt.plot(x, y, marker='o', color='red')
+
+        for id_terminal in self.graph.id_terminals:
+            terminal = self.graph[id_terminal]
+            plt.plot(terminal.x, terminal.y, marker='^', color='green')
+
+        for id_distrib in self.graph.id_distribs:
+            distrib = self.graph[id_distrib]
+            plt.plot(distrib.x, distrib.y, marker='s', color='blue')
+        plt.show()
 
 
 if __name__ == '__main__':
