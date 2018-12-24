@@ -168,19 +168,21 @@ def getClustersFromDistribs(distribs, graph):
     return clusters
 
 class Loop: # Represente une unique boucle
-    def __init__(self, elements_id = [], chains_dict = dict(), all_chains = []):
+    def __init__(self, elements_id = [], all_chains = [], loop_chains = []):
         self.elements_id = elements_id # Contient les id des vertex composant la boucle
-        self.chains_dict = chains_dict # Dictionnaire associant à un element de la loop une liste d'id representant la chaine
+        # self.chains_dict = chains_dict # Dictionnaire associant à un element de la loop une liste d'id representant la chaine
         self.all_chains = all_chains # Tableau partagé contenant toutes les chaines du graphe
+        self.loop_chains = loop_chains
 
     def create_chain(self, parent_node_id, chain_list):
         '''Créée une chaine a un element de la loop'''
         if parent_node_id in self.elements_id:
             chain = Chain(chain_list, self, parent_node_id, self.all_chains)
-            try:
-                self.chains_dict[parent_node_id].append(chain)
-            except:
-                self.chains_dict[parent_node_id] = [chain]
+            # try:
+            #     self.chains_dict[parent_node_id].append(chain)
+            # except:
+            #     self.chains_dict[parent_node_id] = [chain]
+            self.loop_chains.append(chain)
             self.all_chains.append(chain)
         else:
             print("set_chain : element pas dans la loop")
@@ -189,24 +191,29 @@ class Loop: # Represente une unique boucle
         '''Ajoute un objet de type Chain a une Loop'''
         parent_node_id = chain.parent_node_id
         if parent_node_id in self.elements_id:
-            try:
-                self.chains_dict[parent_node_id].append(chain)
-            except:
-                self.chains_dict[parent_node_id] = [chain]
+            # try:
+            #     self.chains_dict[parent_node_id].append(chain)
+            # except:
+            #     self.chains_dict[parent_node_id] = [chain]
+            self.loop_chains.append(chain)
             self.all_chains.append(chain)
         else:
             print("set_chain : element pas dans la loop")
 
-    def get_chains(self, element_rank):
-        '''Renvoie la liste des chaines accrochees a un sommet'''
-        return self.chains_dict[element_rank]
+    # def get_chains(self, element_rank):
+    #     '''Renvoie la liste des chaines accrochees a un sommet'''
+    #     return self.chains_dict[element_rank]
 
     def get_id_elements_with_chain(self):
         '''Renvoie les id de la loop qui ont une chaine'''
-        return list(self.chains_dict.keys())
+        L = []
+        for chain in self.loop_chains:
+            L.append(chain.parent_node_id)
+
+        return L
 
     def get_list_of_chains(self):
-        return list(self.chains_dict.values())
+        return self.loop_chains
 
     def __getitem__(self, key):
         return self.elements_id[key]
@@ -218,21 +225,32 @@ class Loop: # Represente une unique boucle
         del(self.elements_id[key])
 
     def remove_chain(self, chain_to_del):
-        for parent_id in list(self.chains_dict):
-            chains = self.chains_dict[parent_id]
-            k = 0
-            for i in range(len(chains)):
-                if chains[i-k] == chain_to_del:
-                    del(chains[i-k])
-                    k += 1
-            if len(chains) == 0: # Suppresion de la cle si plus de chaine
-                self.chains_dict.pop(parent_id, None)
+        for i in range(len(self.loop_chains)):
+            if self.loop_chains[i] == chain_to_del:
+                del(self.loop_chains[i])
+                break
 
-        k = 0;
         for i in range(len(self.all_chains)):
-            if self.all_chains[i-k] == chain_to_del:
-                del(self.all_chains[i-k])
-                k += 1
+            if self.all_chains[i] == chain_to_del:
+                del(self.all_chains[i])
+                break
+
+
+        # for parent_id in list(self.chains_dict):
+        #     chains = self.chains_dict[parent_id]
+        #     k = 0
+        #     for i in range(len(chains)):
+        #         if chains[i-k] == chain_to_del:
+        #             del(chains[i-k])
+        #             k += 1
+        #     if len(chains) == 0: # Suppresion de la cle si plus de chaine
+        #         self.chains_dict.pop(parent_id, None)
+        #
+        # k = 0;
+        # for i in range(len(self.all_chains)):
+        #     if self.all_chains[i-k] == chain_to_del:
+        #         del(self.all_chains[i-k])
+        #         k += 1
 
 class Chain:
     def __init__(self, elements_id = [], parent_loop = None, parent_node_id = None, all_chains = []):
@@ -359,7 +377,7 @@ class Solution:
         s = 0
         for cluster in clusters:
             s+=len(cluster)
-            self.loops.append(Loop(cluster, dict(), self.all_chains))
+            self.loops.append(Loop(cluster, self.all_chains, []))
 
         print(s==nbVertices, "GOALLLLLL")
 
@@ -448,7 +466,7 @@ class Solution:
         s = 0
         for cluster in clusters:
             s+=len(cluster)
-            self.loops.append(Loop(cluster, dict(), self.all_chains))
+            self.loops.append(Loop(cluster, self.all_chains, []))
 
         print(s==nbVertices, "GOALLLLLL")
 
@@ -588,6 +606,14 @@ class Solution:
         else:
             return new_solution
 
+    # def disturb_remove_from_chain_to_loop(self):
+    #     idLoop = self.getRandomIdLoop()
+    #     if len(self.loop[idLoop].elements_id) > 30:
+    #         return self #Plus de place
+    #
+    #     new_solution = copy.copy(self)
+    #
+
     def disturb(self):
         r = random.random()
         if r<0.5:
@@ -718,11 +744,10 @@ class Solution:
             if not self.is_loop_admissible(loop):
                 print("Boucle non admissible")
                 return False
-            for id_element, chains in loop.chains_dict.items():
-                for chain in chains:
-                    if not self.is_chain_admissible(chain):
-                        print("Chaine non admissible : {}".format(chain.elements_id))
-                        return False
+            for chain in loop.loop_chains:
+                if not self.is_chain_admissible(chain):
+                    print("Chaine non admissible : {}".format(chain.elements_id))
+                    return False
 
         for chain in self.all_chains:
             if not self.is_chain_admissible(chain):
