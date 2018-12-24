@@ -483,47 +483,44 @@ class Solution:
         return self
 
     def is_loop_admissible(self, loop):
-        if loop == []:
+        if loop.elements_id == []:
             return True
 
         nb_distribs = 0
         nb_terminals = 0
 
-        for id in loop:
+        for id in loop.elements_id:
             if self.graph[id].isDistrib():
                 nb_distribs += 1
             elif self.graph[id].isTerminal():
                 nb_terminals += 1
 
-        # print("distrib {} terminals {}".format(nb_distribs, nb_terminals))
-        return nb_distribs >= 1 and nb_terminals <= 30
+        if nb_distribs == 0:
+            print("Aucun point de distribution dans la boucle")
+            return False
+
+        if nb_terminals > 30:
+            print("Plus de 30 antennes dans la boucle")
+            return False
+
+        return True
 
     def is_chain_admissible(self, chain):
+        if not chain.parent_node_id in chain.parent_loop.elements_id:
+            print("Chaine non admissible car parent_node_id pas dans parent_loop : {}".format(chain.elements_id))
+            return False
+
         if chain.elements_id == []:
             return True
-        # if chain == [] or chain[1] == []:
-        #     return True
-        #
-        # id_parent_loop = chain[0]
-        # chain_elements = chain[1]
 
-        # n = len(chain_elements)
-        n = len(chain.elements_id)
-        if n > 5:
-            # print("chibre")
+        # "Au plus 5 sommets ne sont pas dans la boucle"
+        k = 0
+        for id in chain.elements_id:
+            if not id in chain.parent_loop.elements_id:
+                k += 1
+        if k > 5:
+            print("Plus de 5 sommets hors boucle dans la chaine : ".format(chain))
             return False
-
-        # print(chain_elements)
-
-        # Premier element est dans la boucle a laquelle la chaine appartient
-        if not chain.parent_node_id in chain.parent_loop.elements_id:
-            # print("chibre")
-            return False
-
-        for i in range(1, n):
-            if chain[i] in chain.parent_loop.elements_id:
-                # print("chibre")
-                return False
 
         return True
 
@@ -531,22 +528,24 @@ class Solution:
         Seen = dict()
 
         for id_terminal in self.graph.id_terminals:
-            Seen[id_terminal] = False
-
-        for id_distrib in self.graph.id_distrib:
-            Seen[id_distrib] = False
+            Seen[id_terminal] = 0
+        for id_distrib in self.graph.id_distribs:
+            Seen[id_distrib] = 0
 
         for loop in self.loops:
-            for id_vertex in loop:
-                Seen[id_vertex] = True
+            for id_vertex in loop.elements_id:
+                Seen[id_vertex] += 1
 
         for chain in self.all_chains:
-            for id_vertex in chain:
-                Seen[id_vertex] = True
+            for id_vertex in chain.elements_id:
+                Seen[id_vertex] += 1
 
         for key, seen in Seen.items():
-            if not seen:
-                print(key)
+            if seen == 0:
+                print("Toutes les antennes ne sont pas reliées : {}".format(key))
+                return False
+            if seen > 1:
+                print("Une antenne est reliée plusieurs fois : {} est reliée {} fois".format(key, seen))
                 return False
 
         return True
@@ -554,14 +553,19 @@ class Solution:
     def isAdmissible(self):
         for loop in self.loops:
             if not self.is_loop_admissible(loop):
-                # print("chibre")
+                print("Boucle non admissible")
                 return False
             for id_element, chains in loop.chains_dict.items():
                 for chain in chains:
                     if not self.is_chain_admissible(chain):
-                        # print("chibre")
+                        print("Chaine non admissible : {}".format(chain.elements_id))
                         return False
-        print(self.all_terminals_are_joined())
+
+        for chain in self.all_chains:
+            if not self.is_chain_admissible(chain):
+                print("Chaine non admissible : {}".format(chain.elements_id))
+                return False
+
         return self.all_terminals_are_joined()
 
     def init_random_admissible(self):
