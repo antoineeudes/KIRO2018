@@ -252,13 +252,15 @@ class Solution:
 
     def heuristique(self):
         nbVertices = len(self.graph.vertex)
-        nbClusters = min(nbVertices//30, len(self.graph.id_distribs))
+        print(nbVertices)
+        nbClusters = min(nbVertices//30 + 1, len(self.graph.id_distribs))
         clusters = []
+        print(nbClusters)
 
         for i in range(nbClusters):
             clusters.append([])
 
-        for id in range(30*nbClusters):
+        for id in range(min(30*nbClusters, nbVertices)):
             clusters[id//30].append(id)
         for id in range(30*nbClusters, nbVertices):
             clusters[id%nbClusters].append(id)
@@ -390,6 +392,8 @@ class Solution:
         return idLoop
 
     def getRandomIdChain(self):
+        if len(self.all_chains) == 0:
+            return -1
         id = random.randint(0, len(self.all_chains)-1)
         return id
 
@@ -430,8 +434,8 @@ class Solution:
         chain = new_solution.all_chains[id_chain]
         if len(chain.elements_id)<=1:
             return self
-        i = random.randint(1, len(chain.elements_id)-1)
-        j = random.randint(1, len(chain.elements_id)-1)
+        i = random.randint(0, len(chain.elements_id)-1)
+        j = random.randint(0, len(chain.elements_id)-1)
         chain[i],  chain[j] = chain[j], chain[i]
         if not (new_solution.is_chain_admissible(chain)):
             # print("pas_pris")
