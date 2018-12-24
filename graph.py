@@ -651,8 +651,10 @@ class Solution:
 
     def disturb(self):
         r = random.random()
-        if r<0.5:
+        if r<0.25:
             return self.disturb_in_loop()
+        if r<0.5:
+            return self.disturb_remove_from_chain_to_loop()
         elif r<0.75:
             return self.disturb_between_chains()
         elif r<0.9:
@@ -938,7 +940,7 @@ class Solution:
             distrib = self.graph[id_distrib]
             plt.plot(distrib.x, distrib.y, marker='s', color='blue')
         if block:
-            plt.show(block=block)
+            plt.show(block=True)
         else:
             plt.pause(0.01)
 
