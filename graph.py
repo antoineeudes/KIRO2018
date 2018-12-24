@@ -125,6 +125,23 @@ def getCluster(medians, vertex):
 
     return id_cluster
 
+def getClusterFromDistribs(distribs, vertex):
+    id_cluster = 0
+    distance_mini = float('inf')
+    #print("len medians", len(medians))
+
+    for i in range(len(distribs)):
+        distrib = distribs[i]
+        #print("iiiii = ", i)
+        distance = distance2_euclidienne(distrib.x, distrib.y, vertex.x, vertex.y)
+        if distance<distance_mini:
+            #print('chibre')
+            distance_mini = distance
+            id_cluster = i
+            #print('id_cluster', i)
+
+    return id_cluster
+
 
 def getClustersFromMedians(medians, graph):
     #print("len medians = ", len(medians))
@@ -135,6 +152,17 @@ def getClustersFromMedians(medians, graph):
 
     for id, vertex in graph.vertex.items():
         clusters[getCluster(medians, vertex)].append(id)
+    return clusters
+
+def getClustersFromDistribs(distribs, graph):
+    #print("len medians = ", len(medians))
+    clusters = []
+    for i in range(len(distribs)):
+        clusters.append([])
+    #print(len(clusters))
+
+    for id, vertex in graph.vertex.items():
+        clusters[getClusterFromDistribs(distribs, vertex)].append(id)
     return clusters
 
 class Loop: # Represente une unique boucle
@@ -338,6 +366,95 @@ class Solution:
         print(chains)
         # self.chains = chains
 
+    def heuristique2(self):
+        nbVertices = len(self.graph.vertex)
+        print(nbVertices)
+        nbClusters = len(self.graph.id_distribs)
+        clusters = []
+        print(nbClusters)
+
+        # for i in range(nbClusters):
+        #     clusters.append([])
+        #
+        # for id in range(min(30*nbClusters, nbVertices)):
+        #     clusters[id//30].append(id)
+        # for id in range(30*nbClusters, nbVertices):
+        #     clusters[id%nbClusters].append(id)
+        distribs_list = [self.graph[id_distrib] for id_distrib in self.graph.id_distribs]
+        clusters = getClustersFromDistribs(distribs_list, self.graph)
+
+
+        # new_medians = getMediansFromClusters(clusters, self.graph)
+        # medians = nbClusters * [[0, 0]]
+        #
+        # while areDifferent(medians, new_medians):
+        #     medians = copy.deepcopy(new_medians)
+        #     clusters = getClustersFromMedians(new_medians, self.graph)
+        #     new_medians = getMediansFromClusters(clusters, self.graph)
+        #     print("computing")
+
+        # print(clusters)
+        # s = 0
+        # for cluster in clusters:
+        #     s+=len(cluster)
+        #
+        # print(s==nbVertices, "GOALLLLLL")
+
+        available_distribs = []
+        nbDistribs = []
+        for i in range(nbClusters):
+            nbDistrib = 0
+            for j in range(len(clusters[i])):
+                if self.graph.vertex[clusters[i][j]].isDistrib():
+                    nbDistrib += 1
+                    if nbDistrib > 1:
+                        available_distribs.append([i, j, clusters[i][j]])
+            nbDistribs.append(nbDistrib)
+        for i in range(nbClusters):
+            if nbDistribs[i]==0:
+                print(available_distribs)
+                clusters[i].insert(available_distribs[-1][-1], 0)
+                del(clusters[available_distribs[-1][0]][available_distribs[-1][1]])
+                del(available_distribs[-1])
+
+        self.all_chains = []
+        self.loops = []
+        s = 0
+        for cluster in clusters:
+            s+=len(cluster)
+            self.loops.append(Loop(cluster, dict(), self.all_chains))
+
+        print(s==nbVertices, "GOALLLLLL")
+
+        # self.loops = clusters
+        chains = []
+        points_in_chains = []
+        for i in range(nbClusters):
+            n_i = len(clusters[i])
+            if n_i > 30:
+                points_in_chains = clusters[i][30:]
+                nbChainsInLoop = ceil(len(points_in_chains)/4.)
+                for k in range(nbChainsInLoop):
+                    # chains.append([i, [clusters[i][k]] + clusters[i][30+4*k:30+4*(k+1)]])
+                    self.loops[i].create_chain(clusters[i][k], clusters[i][30+4*k:30+4*(k+1)])
+                # chains.append([i, [clusters[i][nbChainsInLoop]] + clusters[i][30+4*nbChainsInLoop:]])
+                self.loops[i].create_chain(clusters[i][nbChainsInLoop], clusters[i][30+4*nbChainsInLoop:])
+                for j in range(30, n_i):
+                    del(clusters[i][-1])
+
+        # chains = [[0, [clusters[0][0]] + points_in_chains]]
+
+
+        for i in range(nbClusters):
+            nbDistrib = 0
+            for j in range(len(clusters[i])):
+
+                if self.graph.vertex[clusters[i][j]].isDistrib():
+                    nbDistrib += 1
+            print(nbDistrib)
+        print(chains)
+        # self.chains = chains
+
 
     def cost_edge(self, id1, id2):
         return self.graph.edges[id1, id2]
@@ -357,12 +474,13 @@ class Solution:
 
     def cost_chain(self, chain):
         '''Compute the cost of a given chain'''
-        if chain == []:
+        if chain.elements_id == []:
             return 0
 
         cost = 0
         # print("CHAINE")
         # print(chain)
+        cost += self.cost_edge(chain.parent_node_id, chain.elements_id[0])
         for i in range(len(chain.elements_id)-1):
             cost += self.cost_edge(chain.elements_id[i], chain.elements_id[i+1])
 
@@ -373,7 +491,7 @@ class Solution:
         for loop in self.loops:
             cost += self.cost_loop(loop)
             # print(loop.get_list_of_chains())
-            for chains in loop.get_list_of_chains():
+            for parent_id, chains in loop.chains_dict.items():
                 for chain in chains:
                     # print("cccccchaine")
                     # print(chain)
@@ -659,14 +777,24 @@ class Solution:
                 line += " " + str(id)
             line += "\n"
             fichier.write(line)
-        for chain in self.all_chains:
-            if chain.elements_id == []:
-                continue
-            line = "c" + " " + str(chain.parent_node_id)
-            for id in chain.elements_id:
-                line += " " + str(id)
-            line += "\n"
-            fichier.write(line)
+
+            for parent_id, chains in loop.chains_dict.items():
+                for chain in chains:
+                    if chain.elements_id == []:
+                        continue
+                    line = "c" + " " + str(parent_id)
+                    for id in chain.elements_id:
+                        line += " " + str(id)
+                    line += "\n"
+                    fichier.write(line)
+            # for chain in self.all_chains:
+            #     if chain.elements_id == []:
+            #         continue
+            #     line = "c" + " " + str(chain.parent_node_id)
+            #     for id in chain.elements_id:
+            #         line += " " + str(id)
+            #     line += "\n"
+            #     fichier.write(line)
         fichier.close()
 
     def show(self):

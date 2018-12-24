@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 30:
+        if time.time()-self.start_time > 120:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -124,7 +124,7 @@ class SimulatedAnnealing_log(SimulatedAnnealing):
 
         self.previous_solution = self.min_solution
 
-        if self.nb_stab_iterations >= 5000:
+        if self.nb_stab_iterations >= 100000:
             print("\n Stopped because stable \n")
             self.nb_stab_iterations = 0
             return True
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     g = graph.Graph()
     min_solution = Solution(g)
     min_solution.show()
-    min_solution.heuristique()
+    min_solution.heuristique2()
     print("Is admissible : ", min_solution.isAdmissible())
 
     # S = SimulatedAnnealing_exp(min_solution, 0.1, 0.9999)
@@ -174,7 +174,7 @@ if __name__ == '__main__':
 
     min_solution = S.compute()
 
-    print("Is admissible : {}".format(min_solution.isAdmissible()))
+    # print("Is admissible : {}".format(min_solution.isAdmissible()))
 
     min_solution.show()
 

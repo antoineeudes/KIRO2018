@@ -64,10 +64,10 @@ class TestLoop(unittest.TestCase):
         self.assertTrue(3 in self.loop.get_id_elements_with_chain())
         self.assertTrue(19 in self.loop.get_id_elements_with_chain())
 
-    def test_get_list_of_chains(self):
-        print(self.loop.chains_dict)
-        print("test")
-        print(self.loop.get_list_of_chains())
-        self.assertTrue([5] in self.loop.get_list_of_chains())
+    # def test_get_list_of_chains(self):
+    #     print(self.loop.chains_dict)
+    #     print("test")
+    #     print(self.loop.get_list_of_chains())
+    #     self.assertTrue([5] in self.loop.get_list_of_chains())
 
 unittest.main()
