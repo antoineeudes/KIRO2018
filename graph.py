@@ -137,32 +137,87 @@ def getClustersFromMedians(medians, graph):
         clusters[getCluster(medians, vertex)].append(id)
     return clusters
 
+class Loop: # Represente une unique boucle
+    def __init__(self, elements_id = [], chains_dict = dict(), all_chains = []):
+        self.elements_id = elements_id # Contient les id des vertex composant la boucle
+        self.chains_dict = chains_dict # Dictionnaire associant à un element de la loop une liste d'id representant la chaine
+        self.all_chains = all_chains # Tableau partagé contenant toutes les chaines du graphe
+
+    def create_chain(self, parent_node_id, chain_list):
+        '''Créée une chaine a un element de la loop'''
+        if parent_node_id in self.elements_id:
+            chain = Chain(chain_list, self, parent_node_id, self.all_chains)
+            try:
+                self.chains_dict[parent_node_id].append(chain)
+            except:
+                self.chains_dict[parent_node_id] = [chain]
+            self.all_chains.append(chain)
+        else:
+            print("set_chain : element pas dans la loop")
+
+    def add_chain(self, chain):
+        '''Ajoute un objet de type Chain a une Loop'''
+        parent_node_id = chain.parent_node_id
+        if parent_node_id in self.elements_id:
+            try:
+                self.chains_dict[parent_node_id].append(chain)
+            except:
+                self.chains_dict[parent_node_id] = [chain]
+            self.all_chains.append(chain)
+        else:
+            print("set_chain : element pas dans la loop")
+
+    def get_chains(self, element_rank):
+        '''Renvoie la liste des chaines accrochees a un sommet'''
+        return self.chains_dict[element_rank]
+
+    def get_id_elements_with_chain(self):
+        '''Renvoie les id de la loop qui ont une chaine'''
+        return list(self.chains_dict.keys())
+
+    def get_list_of_chains(self):
+        return list(self.chains_dict.values())
+
+    def __getitem__(self, key):
+        return self.elements_id[key]
+
+    def __setitem__(self, key, value):
+        self.elements_id[key] = value
+
+    def __delitem__(self, key):
+        del(self.elements_id[key])
+
+class Chain:
+    def __init__(self, elements_id = [], parent_loop = None, parent_node_id = None, all_chains = []):
+        self.elements_id = elements_id
+        self.parent_loop = parent_loop
+        self.parent_node_id = parent_node_id
+        self.all_chains = all_chains
+
+    def __getitem__(self, key):
+        return self.elements_id[key]
+
+    def __setitem__(self, key, value):
+        self.elements_id[key] = value
+
+
+
 
 class Solution:
-    def __init__(self, graph, loops=None, chains=None):
+    def __init__(self, graph, loops=None, all_chains=None):
         # La liste de vertex n'est jamais modifiée
         self.graph = graph
-        self.loops = []
-        self.chains = [] # Contient des tupple (id, []) ou id est l'id de la boucle a laquelle la classe est ratachee
-
-        # self.nbLoops = ceil(float(len(self.graph.vertex))/30)
-        # # print("nbLoops", self.nbLoops)
-        # # self.clusterize_distributions(self.nbLoops)
-        # for i in range(self.nbLoops):
-        #     self.loops.append([])
-        #
-        # if loops == None:
-        #     for id, value in self.graph.vertex.items():
-        #         self.loops[id//30].append(id)
+        self.loops = [] # Contient des objets de type Loop
+        self.all_chains = [] # Contient des objets de type Chain (partagé avec chain et loop)
 
         if loops != None:
             self.loops = loops
-        if chains != None:
-            self.chains = chains
+        if all_chains != None:
+            self.all_chains = all_chains
 
 
     def __copy__(self):
-        return Solution(self.graph, copy.deepcopy(self.loops), copy.deepcopy(self.chains))
+        return Solution(self.graph, copy.deepcopy(self.loops), copy.deepcopy(self.all_chains))
 
     # def clusterize_distributions(self, nbClusters):
     #     L = []
@@ -218,7 +273,7 @@ class Solution:
             new_medians = getMediansFromClusters(clusters, self.graph)
             print("computing")
 
-        print(clusters)
+        # print(clusters)
         s = 0
         for cluster in clusters:
             s+=len(cluster)
@@ -243,14 +298,16 @@ class Solution:
                     clusters[i].insert(available_distribs[-1][-1], 0)
                     del(clusters[available_distribs[-1][0]][available_distribs[-1][1]])
                     del(available_distribs[-1])
-
+        self.all_chains = []
+        self.loops = []
         s = 0
         for cluster in clusters:
             s+=len(cluster)
+            self.loops.append(Loop(cluster, dict(), self.all_chains))
 
         print(s==nbVertices, "GOALLLLLL")
 
-        self.loops = clusters
+        # self.loops = clusters
         chains = []
         points_in_chains = []
         for i in range(nbClusters):
@@ -259,8 +316,10 @@ class Solution:
                 points_in_chains = clusters[i][30:]
                 nbChainsInLoop = ceil(len(points_in_chains)/4.)
                 for k in range(nbChainsInLoop):
-                    chains.append([i, [clusters[i][k]] + clusters[i][30+4*k:30+4*(k+1)]])
-                chains.append([i, [clusters[i][nbChainsInLoop]] + clusters[i][30+4*nbChainsInLoop:]])
+                    # chains.append([i, [clusters[i][k]] + clusters[i][30+4*k:30+4*(k+1)]])
+                    self.loops[i].create_chain(clusters[i][k], clusters[i][30+4*k:30+4*(k+1)])
+                # chains.append([i, [clusters[i][nbChainsInLoop]] + clusters[i][30+4*nbChainsInLoop:]])
+                self.loops[i].create_chain(clusters[i][nbChainsInLoop], clusters[i][30+4*nbChainsInLoop:])
                 for j in range(30, n_i):
                     del(clusters[i][-1])
 
@@ -275,7 +334,8 @@ class Solution:
                     nbDistrib += 1
             print(nbDistrib)
         print(chains)
-        self.chains = chains
+        # self.chains = chains
+
 
     def cost_edge(self, id1, id2):
         return self.graph.edges[id1, id2]
@@ -288,7 +348,7 @@ class Solution:
 
         cost = self.cost_edge(loop[-1], loop[0])
 
-        for i in range(len(loop)-1):
+        for i in range(len(loop.elements_id)-1):
             cost += self.cost_edge(loop[i], loop[i+1])
 
         return cost
@@ -299,8 +359,10 @@ class Solution:
             return 0
 
         cost = 0
-        for i in range(len(chain[1])-1):
-            cost += self.cost_edge(chain[1][i], chain[1][i+1])
+        # print("CHAINE")
+        # print(chain)
+        for i in range(len(chain.elements_id)-1):
+            cost += self.cost_edge(chain.elements_id[i], chain.elements_id[i+1])
 
         return cost
 
@@ -308,34 +370,35 @@ class Solution:
         cost = 0
         for loop in self.loops:
             cost += self.cost_loop(loop)
-        for chain in self.chains:
-            cost += self.cost_chain(chain)
+            # print(loop.get_list_of_chains())
+            for chains in loop.get_list_of_chains():
+                for chain in chains:
+                    # print("cccccchaine")
+                    # print(chain)
+                    cost += self.cost_chain(chain)
 
         return cost
 
-    def swap(self):
-        idLoop = random.randint(0, len(self.loops)-1)
-        i = random.randint(0, len(self.loops[idLoop])-1)
-        j = random.randint(0, len(self.loops[idLoop])-1)
-        self.loops[idLoop][i], self.loops[idLoop][j] = self.loops[idLoop][j], self.loops[idLoop][i]
+    # def swap(self):
+    #     idLoop = random.randint(0, len(self.loops)-1)
+    #     i = random.randint(0, len(self.loops[idLoop])-1)
+    #     j = random.randint(0, len(self.loops[idLoop])-1)
+    #     self.loops[idLoop][i], self.loops[idLoop][j] = self.loops[idLoop][j], self.loops[idLoop][i]
 
     def getRandomIdLoop(self):
         idLoop = random.randint(0, len(self.loops)-1)
         return idLoop
 
     def getRandomIdChain(self):
-        try:
-            idChain = random.randint(0, len(self.chains)-1)
-        except:
-            return -1
-        return idChain
+        id = random.randint(0, len(self.all_chains)-1)
+        return id
 
     def disturb_in_loop(self):
         new_solution = copy.copy(self)
         idLoop = self.getRandomIdLoop()
-        i = random.randint(0, len(new_solution.loops[idLoop])-1)
-        j = random.randint(0, len(new_solution.loops[idLoop])-1)
-        new_solution = new_solution.reverse(idLoop, i, j)
+        i = random.randint(0, len(new_solution.loops[idLoop].elements_id)-1)
+        j = random.randint(0, len(new_solution.loops[idLoop].elements_id)-1)
+        new_solution = new_solution.reverse(idLoop, i, j) #Aucune influence sur les chaines
         if not new_solution.is_loop_admissible(new_solution.loops[idLoop]):
             # print("pas pris")
             return self
@@ -346,8 +409,8 @@ class Solution:
         new_solution = copy.copy(self)
         idLoop1 = new_solution.getRandomIdLoop()
         idLoop2 = new_solution.getRandomIdLoop()
-        i = random.randint(0, len(self.loops[idLoop1])-1)
-        j = random.randint(0, len(self.loops[idLoop2])-1)
+        i = random.randint(0, len(self.loops[idLoop1].elements_id)-1)
+        j = random.randint(0, len(self.loops[idLoop2].elements_id)-1)
         if type(self.loops[idLoop1][i]) is type(self.loops[idLoop2][j]):
             # Echange un distrib avec un distrib et un terminal avec un terminal
             # Sinon peut rendre non admissible
@@ -360,16 +423,17 @@ class Solution:
 
     def disturb_in_chain(self):
 
-        idChain = self.getRandomIdChain()
-        if idChain == -1:
+        id_chain = self.getRandomIdChain()
+        if id_chain == -1:
             return self
-        if len(self.chains[idChain])<=1:
-            return self.disturb_in_chain()
         new_solution = copy.copy(self)
-        i = random.randint(1, len(new_solution.chains[idChain])-1)
-        j = random.randint(1, len(new_solution.chains[idChain])-1)
-        new_solution.chains[idChain][i],  new_solution.chains[idChain][j] = new_solution.chains[idChain][j], new_solution.chains[idChain][i]
-        if not (new_solution.is_chain_admissible(new_solution.chains[idChain])):
+        chain = new_solution.all_chains[id_chain]
+        if len(chain.elements_id)<=1:
+            return self
+        i = random.randint(1, len(chain.elements_id)-1)
+        j = random.randint(1, len(chain.elements_id)-1)
+        chain[i],  chain[j] = chain[j], chain[i]
+        if not (new_solution.is_chain_admissible(chain)):
             # print("pas_pris")
             return self
         else:
@@ -379,12 +443,12 @@ class Solution:
         r = random.random()
         if r<0.5:
             return self.disturb_in_loop()
-        elif r<1:
-            return self.disturb_between_loops()
-        # elif r<0.75:
-        #     return self.disturb_between_chains()
-        # else:
-        #     return self.disturb_in_chain()
+        # elif r<1:
+        #     return self.disturb_between_loops()
+        elif r<0.75:
+            return self.disturb_between_chains()
+        else:
+            return self.disturb_in_chain()
         return self
 
     def disturb_between_chains(self):
@@ -392,20 +456,18 @@ class Solution:
         idChain2 = self.getRandomIdChain()
         if idChain1 == -1 or idChain2 == -1:
             return self
-        if len(self.chains[idChain1]) <=1 or len(self.chains[idChain2]):
+        if len(self.all_chains[idChain1].elements_id) <=1 or len(self.all_chains[idChain2].elements_id) <= 1:
             return self.disturb_in_chain()
         new_solution = copy.copy(self)
-        if len(self.chains[idChain1][1]) <= 1 or len(self.chains[idChain2][1]) <= 1:
-            self.disturb_between_chains()
 
-        id1 = random.randint(1, len(self.chains[idChain1])-1)
-        id2 = random.randint(1, len(self.chains[idChain2])-1)
-        new_solution.chains[idChain1][1][id1], new_solution.chains[idChain2][1][id2] = new_solution.chains[idChain2][1][id2], new_solution.chains[idChain1][1][id1]
+        id1 = random.randint(1, len(self.all_chains[idChain1].elements_id)-1)
+        id2 = random.randint(1, len(self.all_chains[idChain2].elements_id)-1)
+        new_solution.all_chains[idChain1][id1], new_solution.all_chains[idChain2][id2] = new_solution.all_chains[idChain2][id2], new_solution.all_chains[idChain1][id1]
 
         return new_solution
 
     def reverse(self, idLoop, i, j):
-        n = len(self.loops[idLoop])
+        n = len(self.loops[idLoop].elements_id)
         if i>=n or j>=n or i<0 or j<0:
             raise IndexError("Indice en dehors des bornes")
 
@@ -437,26 +499,29 @@ class Solution:
         return nb_distribs >= 1 and nb_terminals <= 30
 
     def is_chain_admissible(self, chain):
-        if chain == [] or chain[1] == []:
+        if chain.elements_id == []:
             return True
+        # if chain == [] or chain[1] == []:
+        #     return True
+        #
+        # id_parent_loop = chain[0]
+        # chain_elements = chain[1]
 
-        id_parent_loop = chain[0]
-        chain_elements = chain[1]
-
-        n = len(chain_elements)
-        if n > 6:
+        # n = len(chain_elements)
+        n = len(chain.elements_id)
+        if n > 5:
             # print("chibre")
             return False
 
         # print(chain_elements)
 
-        # Premier element est dans la boucle a laquelle la chiane appartient
-        if not chain_elements[0] in self.loops[id_parent_loop]:
+        # Premier element est dans la boucle a laquelle la chaine appartient
+        if not chain.parent_node_id in chain.parent_loop.elements_id:
             # print("chibre")
             return False
 
         for i in range(1, n):
-            if chain_elements[i] in self.loops[id_parent_loop]:
+            if chain[i] in chain.parent_loop.elements_id:
                 # print("chibre")
                 return False
 
@@ -468,11 +533,14 @@ class Solution:
         for id_terminal in self.graph.id_terminals:
             Seen[id_terminal] = False
 
+        for id_distrib in self.graph.id_distrib:
+            Seen[id_distrib] = False
+
         for loop in self.loops:
             for id_vertex in loop:
                 Seen[id_vertex] = True
 
-        for id_loop, chain in self.chains:
+        for chain in self.all_chains:
             for id_vertex in chain:
                 Seen[id_vertex] = True
 
@@ -488,10 +556,11 @@ class Solution:
             if not self.is_loop_admissible(loop):
                 # print("chibre")
                 return False
-        for chain in self.chains:
-            if not self.is_chain_admissible(chain):
-                # print("chibre")
-                return False
+            for id_element, chains in loop.chains_dict.items():
+                for chain in chains:
+                    if not self.is_chain_admissible(chain):
+                        # print("chibre")
+                        return False
         print(self.all_terminals_are_joined())
         return self.all_terminals_are_joined()
 
@@ -554,12 +623,14 @@ class Solution:
         # print("CHAINS")
         # print(chains)
 
-    def prepare(self):
-        L = []
-        for chain in self.chains:
-            if len(chain[1]) > 1:
-                L.append(chain)
-        self.chains = L
+    # def prepare(self):
+    #
+    #     for loop in self.loops:
+    #         L = []
+    #         for element_id, chain in loop.chains_dict.items():
+    #             if len(chain) > 1:
+    #                 L.append(chain)
+    #         loop.chains_dict[element_id] = L
 
     def write(self):
         if not self.isAdmissible():
@@ -567,24 +638,24 @@ class Solution:
             return None
         for loop in self.loops:
             k = 0
-            while k<len(loop) and not self.graph.vertex[loop[0]].isDistrib():
-                loop.append(loop[0])
+            while k<len(loop.elements_id) and not self.graph.vertex[loop[0]].isDistrib():
+                loop.elements_id.append(loop[0])
                 del(loop[0])
                 k += 1
         fichier = open(PATH_SOLUTION_FILE, 'w')
         for loop in self.loops:
-            if loop == []:
+            if loop.elements_id == []:
                 continue
             line = "b"
-            for id in loop:
+            for id in loop.elements_id:
                 line += " " + str(id)
             line += "\n"
             fichier.write(line)
-        for id_loop, chain in self.chains:
-            if chain == []:
+        for chain in self.all_chains:
+            if chain.elements_id == []:
                 continue
-            line = "c"
-            for id in chain:
+            line = "c" + " " + str(chain.parent_node_id)
+            for id in chain.elements_id:
                 line += " " + str(id)
             line += "\n"
             fichier.write(line)
@@ -597,26 +668,27 @@ class Solution:
 
         for i in range(len(self.loops)):
             loop = self.loops[i]
-            for j in range(len(loop)):
+            for j in range(len(loop.elements_id)):
                 id_node1 = loop[j-1]
                 id_node2 = loop[j]
                 x = [self.graph[id_node1].x, self.graph[id_node2].x]
                 y = [self.graph[id_node1].y, self.graph[id_node2].y]
                 plt.plot(x, y, marker=",", color='black')#colors[i%nb_colors])
 
-        for i in range(len(self.chains)):
-            id_node0, chain = self.chains[i]
-            if len(chain) == 0:
-                continue
-            x = [self.graph[id_node0].x, self.graph[chain[0]].x]
-            y = [self.graph[id_node0].y, self.graph[chain[0]].y]
-            plt.plot(x, y, marker=',', color='red')
-            for j in range(1, len(chain)):
-                id_node1 = chain[j-1]
-                id_node2 = chain[j]
-                x = [self.graph[id_node1].x, self.graph[id_node2].x]
-                y = [self.graph[id_node1].y, self.graph[id_node2].y]
-                plt.plot(x, y, marker=',', color='red')
+            for parent_node_id, chains in loop.chains_dict.items():
+                for chain in chains:
+                    # id_node0, chain = self.chains[i]
+                    if len(chain.elements_id) == 0:
+                        continue
+                    x = [self.graph[parent_node_id].x, self.graph[chain[0]].x]
+                    y = [self.graph[parent_node_id].y, self.graph[chain[0]].y]
+                    plt.plot(x, y, marker=',', color='red')
+                    for j in range(1, len(chain.elements_id)):
+                        id_node1 = chain[j-1]
+                        id_node2 = chain[j]
+                        x = [self.graph[id_node1].x, self.graph[id_node2].x]
+                        y = [self.graph[id_node1].y, self.graph[id_node2].y]
+                        plt.plot(x, y, marker=',', color='red')
 
         for id_terminal in self.graph.id_terminals:
             terminal = self.graph[id_terminal]

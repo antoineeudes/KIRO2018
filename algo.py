@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 5:
+        if time.time()-self.start_time > 30:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -63,7 +63,6 @@ class SimulatedAnnealing:
                 current_solution = copy.copy(new_solution)
                 if current_solution.cost() < self.min_solution.cost():
                     self.min_solution = copy.copy(current_solution)
-                    print(self.min_solution.isAdmissible())
             # else:
             #     print("Pas pris")
 
@@ -173,7 +172,7 @@ if __name__ == '__main__':
     time0 = time.time()
 
 
-    # min_solution = S.compute()
+    min_solution = S.compute()
 
     print("Is admissible : {}".format(min_solution.isAdmissible()))
 
@@ -181,21 +180,17 @@ if __name__ == '__main__':
 
 
     # print("Loops")
-    for loop in min_solution.loops:
-        print(loop)
     # print("Chains")
-    for chain in min_solution.chains:
-        print(chain)
-    min_solution.prepare()
+
+    # min_solution.prepare()
     print("Is admissible : ", min_solution.isAdmissible())
     min_solution.write()
 
 
-    print("LOOPS")
-    print(min_solution.loops)
-    print("CHAINS")
-    print(min_solution.chains)
 
-    print("Is admissible : {}".format(min_solution.isAdmissible()))
-    print("Temps : {}".format(time.time()-time0))
+    # print("LOOPS")
+    # print(min_solution.loops)
+    #
+    # print("Is admissible : {}".format(min_solution.isAdmissible()))
+    # print("Temps : {}".format(time.time()-time0))
     print("Cost : {}".format(min_solution.cost()))
