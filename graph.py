@@ -7,6 +7,8 @@ import copy
 from config import PATH_REFERENCE_GRAPH, PATH_REFERENCE_GRAPH_FIGURE, PATH_SOLUTION_FILE
 from parser import *
 
+plt.ion()
+
 def closest_point_in_list(idPoint, listIds, graph):
     distance_mini = float('inf')
     ind_mini = 0
@@ -215,6 +217,23 @@ class Loop: # Represente une unique boucle
     def __delitem__(self, key):
         del(self.elements_id[key])
 
+    def remove_chain(self, chain_to_del):
+        for parent_id in list(self.chains_dict):
+            chains = self.chains_dict[parent_id]
+            k = 0
+            for i in range(len(chains)):
+                if chains[i-k] == chain_to_del:
+                    del(chains[i-k])
+                    k += 1
+            if len(chains) == 0: # Suppresion de la cle si plus de chaine
+                self.chains_dict.pop(parent_id, None)
+
+        k = 0;
+        for i in range(len(self.all_chains)):
+            if self.all_chains[i-k] == chain_to_del:
+                del(self.all_chains[i-k])
+                k += 1
+
 class Chain:
     def __init__(self, elements_id = [], parent_loop = None, parent_node_id = None, all_chains = []):
         self.elements_id = elements_id
@@ -227,6 +246,13 @@ class Chain:
 
     def __setitem__(self, key, value):
         self.elements_id[key] = value
+
+    def change_anchor_node(self, new_anchor_id):
+        loop = self.parent_loop
+        loop.remove_chain(self)
+        self.parent_node_id = new_anchor_id
+        loop.add_chain(self)
+
 
 
 
@@ -491,11 +517,12 @@ class Solution:
         for loop in self.loops:
             cost += self.cost_loop(loop)
             # print(loop.get_list_of_chains())
-            for parent_id, chains in loop.chains_dict.items():
-                for chain in chains:
+            # for parent_id, chains in loop.chains_dict.items():
+            #     for chain in chains:
                     # print("cccccchaine")
                     # print(chain)
-                    cost += self.cost_chain(chain)
+        for chain in self.all_chains:
+            cost += self.cost_chain(chain)
 
         return cost
 
@@ -565,12 +592,12 @@ class Solution:
         r = random.random()
         if r<0.5:
             return self.disturb_in_loop()
-        # elif r<1:
-        #     return self.disturb_between_loops()
         elif r<0.75:
             return self.disturb_between_chains()
-        else:
+        elif r<0.9:
             return self.disturb_in_chain()
+        else:
+            return self.disturb_anchor_point_in_loop()
         return self
 
     def disturb_between_chains(self):
@@ -586,6 +613,20 @@ class Solution:
         id2 = random.randint(1, len(self.all_chains[idChain2].elements_id)-1)
         new_solution.all_chains[idChain1][id1], new_solution.all_chains[idChain2][id2] = new_solution.all_chains[idChain2][id2], new_solution.all_chains[idChain1][id1]
 
+        return new_solution
+
+    def disturb_anchor_point_in_loop(self):
+        new_solution = copy.copy(self)
+        idChain = self.getRandomIdChain()
+        if idChain == -1:
+            return self
+        chain = new_solution.all_chains[idChain]
+        i = random.randint(0, len(chain.parent_loop.elements_id)-1)
+        chain.change_anchor_node(chain.parent_loop.elements_id[i])
+        # print("chosen {}".format(chain.parent_loop.elements_id[i]))
+        # # print(chain.parent_loop.chains_dict)
+        # for chain in new_solution.all_chains:
+        #     print("parent_id {}".format(chain.parent_node_id))
         return new_solution
 
     def reverse(self, idLoop, i, j):
@@ -778,15 +819,16 @@ class Solution:
             line += "\n"
             fichier.write(line)
 
-            for parent_id, chains in loop.chains_dict.items():
-                for chain in chains:
-                    if chain.elements_id == []:
-                        continue
-                    line = "c" + " " + str(parent_id)
-                    for id in chain.elements_id:
-                        line += " " + str(id)
-                    line += "\n"
-                    fichier.write(line)
+            # for parent_id, chains in loop.chains_dict.items():
+            #     for chain in chains:
+        for chain in self.all_chains:
+            if chain.elements_id == []:
+                continue
+            line = "c" + " " + str(chain.parent_node_id)
+            for id in chain.elements_id:
+                line += " " + str(id)
+            line += "\n"
+            fichier.write(line)
             # for chain in self.all_chains:
             #     if chain.elements_id == []:
             #         continue
@@ -797,7 +839,7 @@ class Solution:
             #     fichier.write(line)
         fichier.close()
 
-    def show(self):
+    def show(self, block=True):
         plt.clf()
         # colors = "bgrcmk"
         # nb_colors = len(colors)
@@ -811,20 +853,22 @@ class Solution:
                 y = [self.graph[id_node1].y, self.graph[id_node2].y]
                 plt.plot(x, y, marker=",", color='black')#colors[i%nb_colors])
 
-            for parent_node_id, chains in loop.chains_dict.items():
-                for chain in chains:
-                    # id_node0, chain = self.chains[i]
-                    if len(chain.elements_id) == 0:
-                        continue
-                    x = [self.graph[parent_node_id].x, self.graph[chain[0]].x]
-                    y = [self.graph[parent_node_id].y, self.graph[chain[0]].y]
-                    plt.plot(x, y, marker=',', color='red')
-                    for j in range(1, len(chain.elements_id)):
-                        id_node1 = chain[j-1]
-                        id_node2 = chain[j]
-                        x = [self.graph[id_node1].x, self.graph[id_node2].x]
-                        y = [self.graph[id_node1].y, self.graph[id_node2].y]
-                        plt.plot(x, y, marker=',', color='red')
+            # for parent_node_id, chains in loop.chains_dict.items():
+            #     for chain in chains:
+            #         # id_node0, chain = self.chains[i]
+        for chain in self.all_chains:
+            parent_node_id = chain.parent_node_id
+            if len(chain.elements_id) == 0:
+                continue
+            x = [self.graph[parent_node_id].x, self.graph[chain[0]].x]
+            y = [self.graph[parent_node_id].y, self.graph[chain[0]].y]
+            plt.plot(x, y, marker=',', color='red')
+            for j in range(1, len(chain.elements_id)):
+                id_node1 = chain[j-1]
+                id_node2 = chain[j]
+                x = [self.graph[id_node1].x, self.graph[id_node2].x]
+                y = [self.graph[id_node1].y, self.graph[id_node2].y]
+                plt.plot(x, y, marker=',', color='red')
 
         for id_terminal in self.graph.id_terminals:
             terminal = self.graph[id_terminal]
@@ -833,7 +877,10 @@ class Solution:
         for id_distrib in self.graph.id_distribs:
             distrib = self.graph[id_distrib]
             plt.plot(distrib.x, distrib.y, marker='s', color='blue')
-        plt.show()
+        if block:
+            plt.show(block=block)
+        else:
+            plt.pause(0.01)
 
 
 if __name__ == '__main__':
