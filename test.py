@@ -48,6 +48,12 @@ class TestStringMethods(unittest.TestCase):
             sol = sol.disturb_remove_from_chain_to_loop()
         self.assertTrue(sol.isAdmissible())
 
+    def test_disturb_create_new_chain(self):
+        sol = copy.copy(self.sol)
+        for i in range(1000):
+            sol = sol.disturb_create_new_chain()
+        self.assertTrue(sol.isAdmissible())
+
     # def test_disturb_between_chains(self):
     #     sol = copy.copy(self.sol)
     #     for i in range(1000):

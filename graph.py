@@ -615,52 +615,70 @@ class Solution:
         '''Essai d'enelever un element d'une chaine pour le mettre dans la boucle'''
         idLoop = self.getRandomIdLoop()
         if len(self.loops[idLoop].elements_id) > 30:
-            # print("plus de place")
             return self #Plus de place
-        # print("place")
+
         if len(self.loops[idLoop].loop_chains) == 0:
-            # print("plus de chaine")
             return self # Aucune chaine dans la loop
-        print("chaine")
+
         new_solution = copy.copy(self)
         loop = new_solution.loops[idLoop]
         pos = random.randint(0, len(loop.elements_id)-1)
         i_chain = random.randint(0, len(loop.loop_chains)-1)
         chain = loop.loop_chains[i_chain]
         if len(chain.elements_id) == 0:
-            print("chaine vide")
             return self # chaine choisie vide
 
-        print("pas chaine vide")
         i_chain_element = random.randint(0, len(chain.elements_id)-1)
 
         loop.elements_id.insert(pos, chain[i_chain_element]) # Ajout dans la boucle
 
         if len(chain.elements_id) == 1: # Si on va vider la chaine
-            # print("vidé")
-            # for i in range(len(self.all_chains)):
-            #     if self.all_chains[i] == chain:
-            #         delete(self.all_chains[i])
-            #         print("bite")
             del(loop.loop_chains[i_chain])
 
         del(chain[i_chain_element]) # Suppression dans la chaine
         new_solution.isAdmissible()
         return new_solution
 
+    def disturb_create_new_chain(self):
+        '''Cree une nouvelle chaine a partir d'un element de la loop'''
+        idLoop = self.getRandomIdLoop()
+        if len(self.loops[idLoop].elements_id) <= 1:
+            return self
+        i = random.randint(0, len(self.loops[idLoop].elements_id)-1)
+        if isinstance(self.graph[self.loops[idLoop].elements_id[i]], Distrib):
+            return self
+        elements_with_chains = self.loops[idLoop].get_id_elements_with_chain()
+        if self.loops[idLoop].elements_id[i] in elements_with_chains:
+            return self
+        new_solution = copy.copy(self)
+        loop = new_solution.loops[idLoop]
+        element_id = loop.elements_id[i]
+        loop.create_chain(loop.elements_id[i-1], [element_id])
+        del(loop.elements_id[i])
+
+        return new_solution
+
+
+
 
     def disturb(self):
         r = random.random()
-        if r<0.25:
-            return self.disturb_in_loop()
         if r<0.5:
+            return self.disturb_in_loop()
+
+        i = random.randint(0, 4)
+
+        if i == 0:
             return self.disturb_remove_from_chain_to_loop()
-        elif r<0.75:
+        elif i == 1:
             return self.disturb_between_chains()
-        elif r<0.9:
+        elif i == 2:
             return self.disturb_in_chain()
-        else:
+        elif i == 3:
             return self.disturb_anchor_point_in_loop()
+        elif i == 4:
+            return self.disturb_create_new_chain()
+
         return self
 
     def disturb_between_chains(self):
@@ -733,7 +751,7 @@ class Solution:
 
     def is_chain_admissible(self, chain):
         if not chain.parent_node_id in chain.parent_loop.elements_id:
-            print("Chaine non admissible car parent_node_id pas dans parent_loop : {}".format(chain.elements_id))
+            print("Chaine non admissible car parent_node_id {} pas dans parent_loop : {}".format(chain.parent_node_id, chain.parent_loop.elements_id))
             return False
 
         if chain.elements_id == []:
