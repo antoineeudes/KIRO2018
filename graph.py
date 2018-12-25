@@ -766,23 +766,23 @@ class Solution:
         # if r<0.5:
         #     return self.disturb_in_loop()
 
-        i = random.randint(0, 6)
+        i = random.randint(0, 7)
 
         if i == 0:
             return self.disturb_remove_from_chain_to_loop()
-            # elif i == 1:
-            #     return self.disturb_between_chains()
         elif i == 1:
-            return self.disturb_in_chain()
+            return self.disturb_between_chains()
         elif i == 2:
-            return self.disturb_anchor_point_in_loop()
+            return self.disturb_in_chain()
         elif i == 3:
-            return self.disturb_create_new_chain()
+            return self.disturb_anchor_point_in_loop()
         elif i == 4:
-            return self.disturb_anchor_point_in_other_loop()
+            return self.disturb_create_new_chain()
         elif i == 5:
-            return self.disturb_between_loops()
+            return self.disturb_anchor_point_in_other_loop()
         elif i == 6:
+            return self.disturb_between_loops()
+        elif i == 7:
             # j = random.randint(0, 2)
             j = 0
             if j == 0:
@@ -791,14 +791,16 @@ class Solution:
         return self
 
     def disturb_between_chains(self):
-        id_loop = self.getRandomIdLoop()
-        if len(self.loops[id_loop].loop_chains) <= 1:
-            return self # pas assez de chaines dans la boucle
-        new_solution = copy.copy(self)
-        loop = new_solution.loops[id_loop]
+        # id_loop = self.getRandomIdLoop()
+        # if len(self.loops[id_loop].loop_chains) <= 1:
+        #     return self # pas assez de chaines dans la boucle
+        # new_solution = copy.copy(self)
+        # loop = new_solution.loops[id_loop]
 
-        chain1 = loop.getRandomChain()
-        chain2 = loop.getRandomChain()
+        new_solution = copy.copy(self)
+
+        chain1 = new_solution.getRandomChain()
+        chain2 = new_solution.getRandomChain()
 
         if chain1 == None or chain2 == None:
             return self
