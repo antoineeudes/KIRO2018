@@ -216,6 +216,17 @@ class Loop: # Represente une unique boucle
 
         return L
 
+    def get_chains_by_id_dict(self):
+        '''Renvoie les id de la loop qui ont une chaine'''
+        d = dict()
+        for chain in self.loop_chains:
+            try:
+                d[chain.parent_node_id].append(chain)
+            except:
+                d[chain.parent_node_id] = [chain]
+
+        return d
+
     def get_list_of_chains(self):
         return self.loop_chains
 
@@ -698,7 +709,6 @@ class Solution:
             del(loop.loop_chains[i_chain])
 
         del(chain[i_chain_element]) # Suppression dans la chaine
-        new_solution.isAdmissible()
         return new_solution
 
     def disturb_create_new_chain(self):
@@ -710,20 +720,42 @@ class Solution:
         i = random.randint(0, len(self.loops[idLoop].elements_id)-1)
         if isinstance(self.graph[self.loops[idLoop].elements_id[i]], Distrib):
             return self
-        elements_with_chains = self.loops[idLoop].get_id_elements_with_chain()
-        if self.loops[idLoop].elements_id[i] in elements_with_chains:
-            return self
+
+        # elements_with_chains = self.loops[idLoop].get_id_elements_with_chain()
         new_solution = copy.copy(self)
+        chains_by_id = new_solution.loops[idLoop].get_chains_by_id_dict()
         loop = new_solution.loops[idLoop]
         element_id = loop.elements_id[i]
+        # if self.loops[idLoop].elements_id[i] in elements_with_chains:
+        if element_id in chains_by_id.keys() and len(chains_by_id[element_id]) >= 2 :
+            return self
+
         p = random.randint(0,1)
         if p==0:
             new_i = i-1
         else:
             new_i = (i+1)%len(loop.elements_id)
-        loop.create_chain(loop.elements_id[new_i], [element_id])
-        del(loop.elements_id[i])
 
+        new_parent_id = loop.elements_id[new_i]
+
+        if not element_id in chains_by_id.keys(): # Pas de chaine sur l'element selectionne
+            loop.create_chain(new_parent_id, [element_id])
+            del(loop.elements_id[i])
+            # print("pas de chaine")
+            return new_solution
+        elif len(chains_by_id[element_id]) == 1: # Une unique chaine partant de l'element selectionne
+            # print("une seule chaine")
+            chain = chains_by_id[element_id][0]
+            if len(chain.elements_id) > 5: # Plus de place
+                return self
+            # print("pris")
+            chain.elements_id.insert(0, element_id) # Ajout de l'element a la boucle au debut de celle-ci
+            chain.parent_node_id = new_parent_id
+            # print("new_parent : {}, element : {}".format(new_parent_id, loop.elements_id[i]))
+            del(loop.elements_id[i])
+            return new_solution
+
+        # del(loop.elements_id[i]) # Suppression de l'element deplace dans la loop
         return new_solution
 
 
@@ -751,7 +783,10 @@ class Solution:
         elif i == 5:
             return self.disturb_between_loops()
         elif i == 6:
-            return self.disturb_in_loop()
+            # j = random.randint(0, 2)
+            j = 0
+            if j == 0:
+                return self.disturb_in_loop()
 
         return self
 
