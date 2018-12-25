@@ -189,12 +189,16 @@ class Loop: # Represente une unique boucle
 
     def add_chain(self, chain):
         '''Ajoute un objet de type Chain a une Loop'''
+        # if len(chain.elements_id) == 0:
+        #     print("chaine vide supprimée")
+        #     return
         parent_node_id = chain.parent_node_id
         if parent_node_id in self.elements_id:
             # try:
             #     self.chains_dict[parent_node_id].append(chain)
             # except:
             #     self.chains_dict[parent_node_id] = [chain]
+            chain.parent_loop = self
             self.loop_chains.append(chain)
             # self.all_chains.append(chain)
         else:
@@ -225,10 +229,28 @@ class Loop: # Represente une unique boucle
         del(self.elements_id[key])
 
     def remove_chain(self, chain_to_del):
+        k = 0
         for i in range(len(self.loop_chains)):
-            if self.loop_chains[i] == chain_to_del:
-                del(self.loop_chains[i])
-                break
+            if self.loop_chains[i-k] == chain_to_del:
+                del(self.loop_chains[i-k])
+                k += 1
+                # break
+
+    def get_chains_with_parent_id(self, parent_id):
+        if len(self.loop_chains) == 0:
+            return []
+
+        L = []
+        for chain in self.loop_chains:
+            if chain.parent_node_id == parent_id:
+                L.append(chain)
+        return L
+
+    def getRandomChain(self):
+        if len(self.loop_chains) == 0:
+            return None
+
+        return self.loop_chains[random.randint(0, len(self.loop_chains)-1)]
 
         # for i in range(len(self.all_chains)):
         #     if self.all_chains[i] == chain_to_del:
@@ -273,6 +295,13 @@ class Chain:
         loop.remove_chain(self)
         self.parent_node_id = new_anchor_id
         loop.add_chain(self)
+
+    def delete_from_parent_loop(self):
+        # print("parent_id {} {} {}".format(self.parent_node_id, self.elements_id, self.parent_loop))
+        if self.parent_loop != None:
+            self.parent_loop.remove_chain(self)
+        self.parent_node_id = None
+        self.parent_loop = None
 
 
 
@@ -577,19 +606,52 @@ class Solution:
             return new_solution
 
     def disturb_between_loops(self):
-        new_solution = copy.copy(self)
-        idLoop1 = new_solution.getRandomIdLoop()
-        idLoop2 = new_solution.getRandomIdLoop()
+        idLoop1 = self.getRandomIdLoop()
+        idLoop2 = self.getRandomIdLoop()
+
+        if idLoop1 == idLoop2:
+            return self # Tres important sinon faux : si deux fois la meme loop,
+            # une meme chaine peut etre consideree 2 fois et dupliquee
+
         i = random.randint(0, len(self.loops[idLoop1].elements_id)-1)
         j = random.randint(0, len(self.loops[idLoop2].elements_id)-1)
-        if type(self.loops[idLoop1][i]) is type(self.loops[idLoop2][j]):
+        if type(self.graph[self.loops[idLoop1][i]]) is type(self.graph[self.loops[idLoop2][j]]):
             # Echange un distrib avec un distrib et un terminal avec un terminal
             # Sinon peut rendre non admissible
-            new_solution.loops[idLoop1][i],  new_solution.loops[idLoop2][j] = new_solution.loops[idLoop2][j], new_solution.loops[idLoop1][i]
+
+            new_solution = copy.copy(self)
+            loop1 = new_solution.loops[idLoop1]
+            loop2 = new_solution.loops[idLoop2]
+
+            chains_1 = loop1.get_chains_with_parent_id(loop1[i])
+            chains_2 = loop2.get_chains_with_parent_id(loop2[j])
+
+            # Mise a jour des attributs des chaines :
+            # Retrait des chaines des noeuds parents
+            if chains_1 != None:
+                for chain1 in chains_1:
+                    chain1.delete_from_parent_loop()
+            if chains_2 != None:
+                for chain2 in chains_2:
+                    chain2.delete_from_parent_loop()
+
+            # Echanges des noeuds parents
+            loop1[i], loop2[j] = loop2[j], loop1[i]
+            # On raccroche les chaines aux nouveaux noeuds parents
+            if chains_1 != None:
+                for chain1 in chains_1:
+                    chain1.parent_node_id = loop2[j]
+                    chain1.parent_loop = loop2
+                    loop2.add_chain(chain1)
+
+            if chains_2 != None:
+                for chain2 in chains_2:
+                    chain2.parent_node_id = loop1[i]
+                    chain2.parent_loop = loop1
+                    loop1.add_chain(chain2)
+
             return new_solution
-        if not (new_solution.is_loop_admissible(new_solution.loops[idLoop1]) and new_solution.is_loop_admissible(new_solution.loops[idLoop2])):
-            # print("pas_pris")
-            return self
+
         return self
 
     def disturb_in_chain(self):
@@ -622,7 +684,6 @@ class Solution:
 
         new_solution = copy.copy(self)
         loop = new_solution.loops[idLoop]
-        pos = random.randint(0, len(loop.elements_id)-1)
         i_chain = random.randint(0, len(loop.loop_chains)-1)
         chain = loop.loop_chains[i_chain]
         if len(chain.elements_id) == 0:
@@ -630,6 +691,7 @@ class Solution:
 
         i_chain_element = random.randint(0, len(chain.elements_id)-1)
 
+        pos = random.randint(0, len(loop.elements_id)-1)
         loop.elements_id.insert(pos, chain[i_chain_element]) # Ajout dans la boucle
 
         if len(chain.elements_id) == 1: # Si on va vider la chaine
@@ -644,6 +706,7 @@ class Solution:
         idLoop = self.getRandomIdLoop()
         if len(self.loops[idLoop].elements_id) <= 1:
             return self
+        # indice de l'element a enlever
         i = random.randint(0, len(self.loops[idLoop].elements_id)-1)
         if isinstance(self.graph[self.loops[idLoop].elements_id[i]], Distrib):
             return self
@@ -653,7 +716,12 @@ class Solution:
         new_solution = copy.copy(self)
         loop = new_solution.loops[idLoop]
         element_id = loop.elements_id[i]
-        loop.create_chain(loop.elements_id[i-1], [element_id])
+        p = random.randint(0,1)
+        if p==0:
+            new_i = i-1
+        else:
+            new_i = (i+1)%len(loop.elements_id)
+        loop.create_chain(loop.elements_id[new_i], [element_id])
         del(loop.elements_id[i])
 
         return new_solution
@@ -662,29 +730,40 @@ class Solution:
 
 
     def disturb(self):
-        r = random.random()
-        if r<0.5:
-            return self.disturb_in_loop()
+        # r = random.random()
+        # if r<0.5:
+        #     return self.disturb_in_loop()
 
-        i = random.randint(0, 4)
+        i = random.randint(0, 6)
 
         if i == 0:
             return self.disturb_remove_from_chain_to_loop()
+            # elif i == 1:
+            #     return self.disturb_between_chains()
         elif i == 1:
-            return self.disturb_between_chains()
-        elif i == 2:
             return self.disturb_in_chain()
-        elif i == 3:
+        elif i == 2:
             return self.disturb_anchor_point_in_loop()
-        elif i == 4:
+        elif i == 3:
             return self.disturb_create_new_chain()
+        elif i == 4:
+            return self.disturb_anchor_point_in_other_loop()
+        elif i == 5:
+            return self.disturb_between_loops()
+        elif i == 6:
+            return self.disturb_in_loop()
 
         return self
 
     def disturb_between_chains(self):
+        id_loop = self.getRandomIdLoop()
+        if len(self.loops[id_loop].loop_chains) <= 1:
+            return self # pas assez de chaines dans la boucle
         new_solution = copy.copy(self)
-        chain1 = new_solution.getRandomChain()
-        chain2 = new_solution.getRandomChain()
+        loop = new_solution.loops[id_loop]
+
+        chain1 = loop.getRandomChain()
+        chain2 = loop.getRandomChain()
 
         if chain1 == None or chain2 == None:
             return self
@@ -699,16 +778,42 @@ class Solution:
 
     def disturb_anchor_point_in_loop(self):
         new_solution = copy.copy(self)
-        chain = self.getRandomChain()
+        chain = new_solution.getRandomChain()
         if chain == None:
             return self
+        p = random.randint(0, 1)
         i = random.randint(0, len(chain.parent_loop.elements_id)-1)
+        if p == 0:
+            # On favorise les noeuds juste a cote du point d'ancrage actuel
+            # (donc dans la même chaine)
+            for j in range(len(chain.parent_loop.elements_id)):
+                if chain.parent_loop.elements_id[j] == chain.parent_node_id:
+                    # On a retrouve la pos j du point d'ancrage
+                    # On ratache a sa droite ou a sa gauche
+                    p = random.randint(0, 1)
+                    if p == 0:
+                        i = j-1
+                    else:
+                        i = (j+1)%len(chain.parent_loop.elements_id)
+                    break
+
         chain.change_anchor_node(chain.parent_loop.elements_id[i])
-        # print("chosen {}".format(chain.parent_loop.elements_id[i]))
-        # # print(chain.parent_loop.chains_dict)
-        # for chain in new_solution.all_chains:
-        #     print("parent_id {}".format(chain.parent_node_id))
         return new_solution
+
+    def disturb_anchor_point_in_other_loop(self):
+        new_solution = copy.copy(self)
+        chain = new_solution.getRandomChain()
+        if chain == None:
+            return self
+        new_loop = new_solution.loops[new_solution.getRandomIdLoop()]
+        chain.delete_from_parent_loop()
+        new_parent_id = random.randint(0, len(new_loop.elements_id)-1)
+        chain.parent_node_id = new_loop.elements_id[new_parent_id]
+        # chain.parent_loop = new_loop
+        new_loop.add_chain(chain)
+
+        return new_solution
+
 
     def reverse(self, idLoop, i, j):
         n = len(self.loops[idLoop].elements_id)

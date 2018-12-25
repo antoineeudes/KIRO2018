@@ -46,7 +46,7 @@ class SimulatedAnnealing:
             return True
         return False
 
-    def compute(self, start_solution=None, show=True):
+    def compute(self, start_solution=None, show=True, display_improvment=False):
 
         if(start_solution != None):
             self.min_solution = start_solution
@@ -63,6 +63,8 @@ class SimulatedAnnealing:
                 current_solution = copy.copy(new_solution)
                 if current_solution.cost() < self.min_solution.cost():
                     self.min_solution = copy.copy(current_solution)
+                    if display_improvment:
+                        current_solution.show(block=False)
             # else:
             #     print("Pas pris")
 
@@ -124,7 +126,7 @@ class SimulatedAnnealing_log(SimulatedAnnealing):
 
         self.previous_solution = self.min_solution
 
-        if self.nb_stab_iterations >= 100000:
+        if self.nb_stab_iterations >= 10000:
             print("\n Stopped because stable \n")
             self.nb_stab_iterations = 0
             return True
@@ -163,7 +165,7 @@ if __name__ == '__main__':
     # S = SimulatedAnnealing_exp(min_solution, 0.1, 0.9999)
     # S = SimulatedAnnealing_exp(min_solution)
     # S = SimulatedAnnealing_exp(min_solution)
-    S = SimulatedAnnealing_log(min_solution)
+    S = SimulatedAnnealing_log(min_solution, T0=10)
     # S = SimulatedAnnealing_repeated(min_solution, 1000, 0.3, 5000)
 
     min_solution.show()
@@ -172,7 +174,7 @@ if __name__ == '__main__':
     time0 = time.time()
 
 
-    min_solution = S.compute()
+    min_solution = S.compute(display_improvment = False)
 
     # print("Is admissible : {}".format(min_solution.isAdmissible()))
 
