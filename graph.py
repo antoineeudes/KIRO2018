@@ -248,6 +248,32 @@ class Loop: # Represente une unique boucle
 
         return self.loop_chains[random.randint(0, len(self.loop_chains)-1)]
 
+    def cost_edge(self, id1, id2):
+        return self.graph.edges[id1, id2]
+
+    def cost_loop_only(self):
+        '''Compute the cost of the loop without chain'''
+        if len(self.elements_id) == 0:
+            return 0
+
+        cost = self.cost_edge(self[-1], self[0])
+
+        for i in range(len(self.elements_id)-1):
+            cost += self.cost_edge(self[i], self[i+1])
+
+        return cost
+
+    def cost(self):
+        '''Compute the cost of the loop plus chains'''
+
+        cost = self.cost_loop_only()
+        
+        for chain in self.loop_chains:
+            cost += chain.cost()
+
+        return cost
+
+
 class Chain:
     def __init__(self, graph = None, elements_id = [], parent_loop = None, parent_node_id = None):
         self.graph = graph # Jamais modifie, passe par reference lors de la copie
@@ -285,7 +311,20 @@ class Chain:
         self.parent_node_id = None
         self.parent_loop = None
 
+    def cost_edge(self, id1, id2):
+        return self.graph.edges[id1, id2]
 
+    def cost(self):
+        '''Compute the cost of the chain'''
+        if len(self.elements_id) == 0:
+            return 0
+
+        cost = 0
+        cost += self.cost_edge(self.parent_node_id, self[0])
+        for i in range(len(self.elements_id)-1):
+            cost += self.cost_edge(self[i], self[i+1])
+
+        return cost
 
 
 
@@ -435,40 +474,40 @@ class Solution:
 
         print("Heuristique 2 done")
 
-    def cost_edge(self, id1, id2):
-        return self.graph.edges[id1, id2]
+    # def cost_edge(self, id1, id2):
+    #     return self.graph.edges[id1, id2]
 
-    def cost_loop(self, loop):
-        '''Compute the cost of a given loop'''
+    # def cost_loop(self, loop):
+    #     '''Compute the cost of a given loop'''
+    #
+    #     if loop == []:
+    #         return 0
+    #
+    #     cost = self.cost_edge(loop[-1], loop[0])
+    #
+    #     for i in range(len(loop.elements_id)-1):
+    #         cost += self.cost_edge(loop[i], loop[i+1])
+    #
+    #     return cost
 
-        if loop == []:
-            return 0
-
-        cost = self.cost_edge(loop[-1], loop[0])
-
-        for i in range(len(loop.elements_id)-1):
-            cost += self.cost_edge(loop[i], loop[i+1])
-
-        return cost
-
-    def cost_chain(self, chain):
-        '''Compute the cost of a given chain'''
-        if chain.elements_id == []:
-            return 0
-
-        cost = 0
-        cost += self.cost_edge(chain.parent_node_id, chain.elements_id[0])
-        for i in range(len(chain.elements_id)-1):
-            cost += self.cost_edge(chain.elements_id[i], chain.elements_id[i+1])
-
-        return cost
+    # def cost_chain(self, chain):
+    #     '''Compute the cost of a given chain'''
+    #     if chain.elements_id == []:
+    #         return 0
+    #
+    #     cost = 0
+    #     cost += self.cost_edge(chain.parent_node_id, chain.elements_id[0])
+    #     for i in range(len(chain.elements_id)-1):
+    #         cost += self.cost_edge(chain.elements_id[i], chain.elements_id[i+1])
+    #
+    #     return cost
 
     def cost(self):
         cost = 0
         for loop in self.loops:
-            cost += self.cost_loop(loop)
-            for chain in loop.loop_chains:
-                cost += self.cost_chain(chain)
+            cost += loop.cost()
+            # for chain in loop.loop_chains:
+            #     cost += chain.cost()
 
         return cost
 
