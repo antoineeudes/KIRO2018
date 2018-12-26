@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 20:
+        if time.time()-self.start_time > 120:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -51,18 +51,18 @@ class SimulatedAnnealing:
         if(start_solution != None):
             self.min_solution = start_solution
 
-        current_solution = copy.copy(self.min_solution)
+        current_solution = copy.deepcopy(self.min_solution)
 
         self.start_time = time.time()
 
         while not self.stopping_condition() and not self.timeout():
-            new_solution = copy.copy(current_solution.disturb())
+            new_solution = current_solution.disturb()
             p = random.random()
 
             if p < exp(-max(0,new_solution.cost()-current_solution.cost())/self.T):
-                current_solution = copy.copy(new_solution)
+                current_solution = new_solution
                 if current_solution.cost() < self.min_solution.cost():
-                    self.min_solution = copy.copy(current_solution)
+                    self.min_solution = copy.deepcopy(current_solution)
                     if display_improvment:
                         current_solution.show(block=False)
 
@@ -122,7 +122,7 @@ class SimulatedAnnealing_log(SimulatedAnnealing):
 
         self.previous_solution = self.min_solution
 
-        if self.nb_stab_iterations >= 10000:
+        if self.nb_stab_iterations >= 100000:
             print("\n Stopped because stable \n")
             self.nb_stab_iterations = 0
             return True
@@ -167,9 +167,17 @@ if __name__ == '__main__':
     min_solution.show()
     time0 = time.time()
     min_solution = S.compute(display_improvment = False)
-    min_solution.show()
+    # min_solution.show()
     min_solution.write()
 
     print("Is admissible : {}".format(min_solution.isAdmissible()))
     print("Temps : {}".format(time.time()-time0))
     print("Cost : {}".format(min_solution.cost()))
+
+    # for loop in min_solution.loops:
+    #     print("loop {}".format(loop.elements_id))
+    #     for chain in loop.loop_chains:
+    #         print("{} : {} ".format(chain.parent_node_id, chain.parent_loop.elements_id))
+    #         print(chain.parent_loop == loop)
+
+    min_solution.show()

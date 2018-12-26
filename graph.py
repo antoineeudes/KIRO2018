@@ -156,17 +156,33 @@ def getClustersFromDistribs(distribs, graph):
     return clusters
 
 class Loop: # Represente une unique boucle
-    def __init__(self, elements_id = [], loop_chains = []):
+    def __init__(self, graph = None, elements_id = [], loop_chains = []):
+        self.graph = graph # Jamais modifie, passe par reference lors de la copie
         self.elements_id = elements_id # Contient les id des vertex composant la boucle
         self.loop_chains = loop_chains # Contient les chaines accrochees a la loop
+
+    def __deepcopy__(self, memo):
+        # new_loop = Loop(self.graph, self.elements_id[:], copy.deepcopy(self.loop_chains, memo))
+        new_loop = Loop(self.graph, self.elements_id[:])
+        memo['new_parent_loop_ref'] = new_loop
+        new_loop_chains = copy.deepcopy(self.loop_chains, memo)
+        new_loop.loop_chains = new_loop_chains
+        return new_loop
+
+    # def __copy__(self, memo):
+    #     return Loop(self.graph, self.elements_id, copy.deepcopy(self.loop_chains))
 
     def create_chain(self, parent_node_id, chain_list):
         '''Créée une chaine a un element de la loop'''
         if parent_node_id in self.elements_id:
-            chain = Chain(chain_list, self, parent_node_id)
+            chain = Chain(self.graph, chain_list, self, parent_node_id)
+            chain.parent_loop = self
             self.loop_chains.append(chain)
+            return chain
         else:
             print("set_chain : element pas dans la loop")
+
+        return None
 
     def add_chain(self, chain):
         '''Ajoute un objet de type Chain a une Loop'''
@@ -233,11 +249,21 @@ class Loop: # Represente une unique boucle
         return self.loop_chains[random.randint(0, len(self.loop_chains)-1)]
 
 class Chain:
-    def __init__(self, elements_id = [], parent_loop = None, parent_node_id = None):
+    def __init__(self, graph = None, elements_id = [], parent_loop = None, parent_node_id = None):
+        self.graph = graph # Jamais modifie, passe par reference lors de la copie
         self.elements_id = elements_id
         self.parent_loop = parent_loop
         self.parent_node_id = parent_node_id
 
+    def __deepcopy__(self, memo):
+        if 'new_parent_loop_ref' in memo.keys():
+            return Chain(self.graph, self.elements_id[:], memo['new_parent_loop_ref'], parent_node_id = self.parent_node_id)
+        else:
+            return Chain(self.graph, self.elements_id[:], copy.copy(self.parent_loop), parent_node_id = self.parent_node_id)
+
+    # def __copy__(self):
+    #     # On copie pas parent_loop car une copie d'une chaine fait reference a la meme parent_loop et pas a une copie de parent_loop
+    #     return Chain(self.graph, self.elements_id[:], self.parent_loop, parent_node_id = self.parent_node_id)
     def __getitem__(self, key):
         return self.elements_id[key]
 
@@ -272,8 +298,11 @@ class Solution:
         if loops != None:
             self.loops = loops
 
-    def __copy__(self):
-        return Solution(self.graph, copy.deepcopy(self.loops))
+    # def __copy__(self):
+    #     return Solution(self.graph, copy.copy(self.loops))
+
+    def __deepcopy__(self, memo):
+        return Solution(self.graph, copy.deepcopy(self.loops, memo))
 
     def heuristique(self):
         nbVertices = len(self.graph.vertex)
@@ -328,7 +357,7 @@ class Solution:
         s = 0
         for cluster in clusters:
             s+=len(cluster)
-            self.loops.append(Loop(cluster, []))
+            self.loops.append(Loop(self.graph, cluster, []))
 
         print(s==nbVertices, "GOALLLLLL")
 
@@ -382,7 +411,7 @@ class Solution:
         s = 0
         for cluster in clusters:
             s+=len(cluster)
-            self.loops.append(Loop(cluster, []))
+            self.loops.append(Loop(self.graph, cluster, []))
 
         chains = []
         points_in_chains = []
@@ -455,15 +484,15 @@ class Solution:
         return loop.loop_chains[id]
 
     def disturb_in_loop(self):
-        new_solution = copy.copy(self)
+        new_solution = copy.deepcopy(self)
         idLoop = self.getRandomIdLoop()
         i = random.randint(0, len(new_solution.loops[idLoop].elements_id)-1)
         j = random.randint(0, len(new_solution.loops[idLoop].elements_id)-1)
         new_solution = new_solution.reverse(idLoop, i, j) #Aucune influence sur les chaines
         if not new_solution.is_loop_admissible(new_solution.loops[idLoop]):
             return self
-        else:
-            return new_solution
+        # else:
+        return new_solution
 
     def disturb_between_loops(self):
         idLoop1 = self.getRandomIdLoop()
@@ -479,7 +508,7 @@ class Solution:
             # Echange un distrib avec un distrib et un terminal avec un terminal
             # Sinon peut rendre non admissible
 
-            new_solution = copy.copy(self)
+            new_solution = copy.deepcopy(self)
             loop1 = new_solution.loops[idLoop1]
             loop2 = new_solution.loops[idLoop2]
 
@@ -519,7 +548,7 @@ class Solution:
         chain = self.getRandomChain()
         if chain == None:
             return self
-        new_solution = copy.copy(self)
+        new_solution = copy.deepcopy(self)
 
         if len(chain.elements_id)<=1:
             return self
@@ -539,7 +568,7 @@ class Solution:
         if len(self.loops[idLoop].loop_chains) == 0:
             return self # Aucune chaine dans la loop
 
-        new_solution = copy.copy(self)
+        new_solution = copy.deepcopy(self)
         loop = new_solution.loops[idLoop]
         i_chain = random.randint(0, len(loop.loop_chains)-1)
         chain = loop.loop_chains[i_chain]
@@ -568,7 +597,8 @@ class Solution:
             return self
 
         # elements_with_chains = self.loops[idLoop].get_id_elements_with_chain()
-        new_solution = copy.copy(self)
+        new_solution = copy.deepcopy(self)
+        # new_solution = self
         chains_by_id = new_solution.loops[idLoop].get_chains_by_id_dict()
         loop = new_solution.loops[idLoop]
         element_id = loop.elements_id[i]
@@ -585,9 +615,18 @@ class Solution:
         new_parent_id = loop.elements_id[new_i]
 
         if not element_id in chains_by_id.keys(): # Pas de chaine sur l'element selectionne
-            loop.create_chain(new_parent_id, [element_id])
+            # chain = Chain(self.graph, [element_id], loop, new_parent_id)
             del(loop.elements_id[i])
-
+            # loop.loop_chains.append(chain)
+            # chain = new_solution.loops[idLoop].create_chain(new_parent_id, [element_id])
+            chain = loop.create_chain(new_parent_id, [element_id])
+            # del(chain.parent_loop.elements_id[i])
+            # new_solution.loops[idLoop][0] = 0
+            # print("{} {}".format(chain.parent_node_id, chain.parent_loop.elements_id))
+            # print("{} {}".format(chain.parent_node_id, loop.elements_id))
+            # if not chain.parent_node_id in chain.parent_loop.elements_id:
+            #     print("erreur")
+            #     quit()
             return new_solution
 
         elif len(chains_by_id[element_id]) == 1: # Une unique chaine partant de l'element selectionne
@@ -599,12 +638,13 @@ class Solution:
             chain.parent_node_id = new_parent_id
             del(loop.elements_id[i])
 
+
             return new_solution
 
-        return new_solution
+        return self
 
     def disturb(self):
-        i = random.randint(0, 8)
+        i = random.randint(0, 10)
 
         if i == 0:
             return self.disturb_remove_from_chain_to_loop()
@@ -621,14 +661,14 @@ class Solution:
         elif i == 6:
             return self.disturb_between_loops()
         elif i == 7:
-            return self.disturb_in_loop()
-        elif i == 8:
             return self.disturb_transfer_from_chain_to_chain()
+        elif i >= 8:
+            return self.disturb_in_loop()
 
         return self
 
     def disturb_between_chains(self):
-        new_solution = copy.copy(self)
+        new_solution = copy.deepcopy(self)
 
         chain1 = new_solution.getRandomChain()
         chain2 = new_solution.getRandomChain()
@@ -661,7 +701,7 @@ class Solution:
         if len(self.loops[id_loop].loop_chains[id_chain2].elements_id) >= 5:
             return self # Plus de place
 
-        new_solution = copy.copy(self)
+        new_solution = copy.deepcopy(self)
 
         chain1 = new_solution.loops[id_loop].loop_chains[id_chain1]
         chain2 = new_solution.loops[id_loop].loop_chains[id_chain2]
@@ -676,7 +716,7 @@ class Solution:
 
 
     def disturb_anchor_point_in_loop(self):
-        new_solution = copy.copy(self)
+        new_solution = copy.deepcopy(self)
         chain = new_solution.getRandomChain()
         if chain == None:
             return self
@@ -700,7 +740,7 @@ class Solution:
         return new_solution
 
     def disturb_anchor_point_in_other_loop(self):
-        new_solution = copy.copy(self)
+        new_solution = copy.deepcopy(self)
         chain = new_solution.getRandomChain()
         if chain == None:
             return self
@@ -750,11 +790,20 @@ class Solution:
             print("Plus de 30 antennes dans la boucle")
             return False
 
+        for chain in loop.loop_chains:
+            if not chain.parent_node_id in loop.elements_id:
+                print("Parent id {} pas dans la loop {}".format(chain.parent_node_id, loop.elements_id))
+                return False
+
         return True
 
     def is_chain_admissible(self, chain):
         if not chain.parent_node_id in chain.parent_loop.elements_id:
             print("Chaine non admissible car parent_node_id {} pas dans parent_loop : {}".format(chain.parent_node_id, chain.parent_loop.elements_id))
+            return False
+
+        if chain.parent_node_id in chain.elements_id:
+            print("Parent dans la chaine")
             return False
 
         if chain.elements_id == []:

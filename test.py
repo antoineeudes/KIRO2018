@@ -88,12 +88,12 @@ class TestLoop(unittest.TestCase):
         elements_id = [3, 7, 4, 0, 19, 52]
         elements_id2 = [23, 26, 56, 65, 89, 32]
         chains_dict = dict()
-        self.loop = Loop(elements_id, [])
-        self.loop2 = Loop(elements_id2, [])
-        self.loop.add_chain(Chain([13, 16, 18], self.loop, 7))
-        self.loop.add_chain(Chain([5], self.loop, 3))
-        self.loop.add_chain(Chain([], self.loop, 19))
-        self.loop2.add_chain(Chain([1, 2, 6], self.loop, 56))
+        self.loop = Loop(None, elements_id, [])
+        self.loop2 = Loop(None, elements_id2, [])
+        self.loop.add_chain(Chain(None, [13, 16, 18], self.loop, 7))
+        self.loop.add_chain(Chain(None, [5], self.loop, 3))
+        self.loop.add_chain(Chain(None, [], self.loop, 19))
+        self.loop2.add_chain(Chain(None, [1, 2, 6], self.loop, 56))
 
     def test_get_id_elements_with_chain(self):
         self.assertTrue(7 in self.loop.get_id_elements_with_chain())
@@ -104,7 +104,7 @@ class TestLoop(unittest.TestCase):
         self.assertTrue(not 4 in self.loop.get_id_elements_with_chain())
 
     def test_add_chain(self):
-        self.loop.add_chain(Chain([2], self.loop, 52))
+        self.loop.add_chain(Chain(None, [2], self.loop, 52))
 
         ids = self.loop.get_id_elements_with_chain()
         self.assertTrue(52 in ids)
