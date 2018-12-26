@@ -766,7 +766,7 @@ class Solution:
         # if r<0.5:
         #     return self.disturb_in_loop()
 
-        i = random.randint(0, 7)
+        i = random.randint(0, 10)
 
         if i == 0:
             return self.disturb_remove_from_chain_to_loop()
@@ -787,6 +787,8 @@ class Solution:
             j = 0
             if j == 0:
                 return self.disturb_in_loop()
+        elif i >= 8:
+            return self.disturb_transfer_from_chain_to_chain()
 
         return self
 
@@ -812,6 +814,43 @@ class Solution:
         chain1[id1], chain2[id2] = chain2[id2], chain1[id1]
 
         return new_solution
+
+    def disturb_transfer_from_chain_to_chain(self):
+        '''Transfere un element de la chaine1 vers la chaine2'''
+        id_loop = self.getRandomIdLoop()
+        if len(self.loops[id_loop].loop_chains) <= 1:
+            return self # Pas assez de chaines
+
+        id_chain1 = random.randint(0, len(self.loops[id_loop].loop_chains)-1)
+        id_chain2 = random.randint(0, len(self.loops[id_loop].loop_chains)-1)
+
+        if id_chain1 == id_chain2:
+            return self
+
+        if len(self.loops[id_loop].loop_chains[id_chain1].elements_id) == 0:
+            return self
+        # if len(self.loops[id_loop].loop_chains[id_chain2].elements_id) == 0:
+        #     return self
+        if len(self.loops[id_loop].loop_chains[id_chain2].elements_id) >= 5:
+            return self # Plus de place
+
+        new_solution = copy.copy(self)
+
+        chain1 = new_solution.loops[id_loop].loop_chains[id_chain1]
+        chain2 = new_solution.loops[id_loop].loop_chains[id_chain2]
+
+        i1 = random.randint(0, len(chain1.elements_id)-1)
+        pos2 = random.randint(0, len(chain2.elements_id))
+
+        # print("{} \nchain 1 {}".format(chain1.elements_id[i1], chain1.elements_id))
+        # print("chain 2 {}".format(chain2.elements_id))
+        chain2.elements_id.insert(pos2, chain1.elements_id[i1])
+        # print("chain 2 {}".format(chain2.elements_id))
+        del(chain1.elements_id[i1])
+        # print("chain 1 {}".format(chain1.elements_id))
+
+        return new_solution
+
 
     def disturb_anchor_point_in_loop(self):
         new_solution = copy.copy(self)
