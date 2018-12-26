@@ -678,11 +678,11 @@ class Solution:
         i = random.randint(0, len(chain.elements_id)-1)
         j = random.randint(0, len(chain.elements_id)-1)
         chain[i],  chain[j] = chain[j], chain[i]
-        if not (new_solution.is_chain_admissible(chain)):
-            # print("pas_pris")
-            return self
-        else:
-            return new_solution
+        # if not (new_solution.is_chain_admissible(chain)):
+        #     # print("pas_pris")
+        #     return self
+        # else:
+        return new_solution
 
     def disturb_remove_from_chain_to_loop(self):
         '''Essai d'enelever un element d'une chaine pour le mettre dans la boucle'''
@@ -746,7 +746,7 @@ class Solution:
         elif len(chains_by_id[element_id]) == 1: # Une unique chaine partant de l'element selectionne
             # print("une seule chaine")
             chain = chains_by_id[element_id][0]
-            if len(chain.elements_id) > 5: # Plus de place
+            if len(chain.elements_id) >= 5: # Plus de place
                 return self
             # print("pris")
             chain.elements_id.insert(0, element_id) # Ajout de l'element a la boucle au debut de celle-ci
@@ -766,7 +766,7 @@ class Solution:
         # if r<0.5:
         #     return self.disturb_in_loop()
 
-        i = random.randint(0, 10)
+        i = random.randint(0, 8)
 
         if i == 0:
             return self.disturb_remove_from_chain_to_loop()
@@ -944,7 +944,7 @@ class Solution:
             if not id in chain.parent_loop.elements_id:
                 k += 1
         if k > 5:
-            print("Plus de 5 sommets hors boucle dans la chaine : ".format(chain))
+            print("Plus de 5 sommets hors boucle dans la chaine : ".format(chain.elements_id))
             return False
 
         return True
