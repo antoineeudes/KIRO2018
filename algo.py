@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 120:
+        if time.time()-self.start_time > 20:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -65,16 +65,12 @@ class SimulatedAnnealing:
                     self.min_solution = copy.copy(current_solution)
                     if display_improvment:
                         current_solution.show(block=False)
-            # else:
-            #     print("Pas pris")
 
             if(show):
                 print("{} {}".format(self.min_solution.cost(), self.T))
             self.T = self.reduce_temperature(self.T)
 
         return self.min_solution
-
-
 
 class SimulatedAnnealing_exp(SimulatedAnnealing):
     def __init__(self, s0, T=100, alpha=0.9):
@@ -165,34 +161,15 @@ if __name__ == '__main__':
     # S = SimulatedAnnealing_exp(min_solution, 0.1, 0.9999)
     # S = SimulatedAnnealing_exp(min_solution)
     # S = SimulatedAnnealing_exp(min_solution)
-    S = SimulatedAnnealing_log(min_solution, T0=10)
+    S = SimulatedAnnealing_log(min_solution, T0=100)
     # S = SimulatedAnnealing_repeated(min_solution, 1000, 0.3, 5000)
 
     min_solution.show()
-
-
     time0 = time.time()
-
-
     min_solution = S.compute(display_improvment = False)
-
-    # print("Is admissible : {}".format(min_solution.isAdmissible()))
-
     min_solution.show()
-
-
-    # print("Loops")
-    # print("Chains")
-
-    # min_solution.prepare()
-    print("Is admissible : ", min_solution.isAdmissible())
     min_solution.write()
 
-
-
-    # print("LOOPS")
-    # print(min_solution.loops)
-    #
-    # print("Is admissible : {}".format(min_solution.isAdmissible()))
-    # print("Temps : {}".format(time.time()-time0))
+    print("Is admissible : {}".format(min_solution.isAdmissible()))
+    print("Temps : {}".format(time.time()-time0))
     print("Cost : {}".format(min_solution.cost()))

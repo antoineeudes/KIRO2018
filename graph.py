@@ -356,10 +356,8 @@ class Solution:
 
     def heuristique2(self):
         nbVertices = len(self.graph.vertex)
-        print(nbVertices)
         nbClusters = len(self.graph.id_distribs)
         clusters = []
-        print(nbClusters)
 
         distribs_list = [self.graph[id_distrib] for id_distrib in self.graph.id_distribs]
         clusters = getClustersFromDistribs(distribs_list, self.graph)
@@ -376,7 +374,6 @@ class Solution:
             nbDistribs.append(nbDistrib)
         for i in range(nbClusters):
             if nbDistribs[i]==0:
-                print(available_distribs)
                 clusters[i].insert(available_distribs[-1][-1], 0)
                 del(clusters[available_distribs[-1][0]][available_distribs[-1][1]])
                 del(available_distribs[-1])
@@ -386,8 +383,6 @@ class Solution:
         for cluster in clusters:
             s+=len(cluster)
             self.loops.append(Loop(cluster, []))
-
-        print(s==nbVertices, "GOALLLLLL")
 
         chains = []
         points_in_chains = []
@@ -408,8 +403,8 @@ class Solution:
 
                 if self.graph.vertex[clusters[i][j]].isDistrib():
                     nbDistrib += 1
-            print(nbDistrib)
-        print(chains)
+
+        print("Heuristique 2 done")
 
     def cost_edge(self, id1, id2):
         return self.graph.edges[id1, id2]
@@ -889,6 +884,7 @@ class Solution:
         fichier.close()
 
     def show(self, block=True):
+        print("Drawing...")
         plt.clf()
 
         for i in range(len(self.loops)):
@@ -921,11 +917,13 @@ class Solution:
         for id_distrib in self.graph.id_distribs:
             distrib = self.graph[id_distrib]
             plt.plot(distrib.x, distrib.y, marker='s', color='blue')
+
+        print("Drawing done")
+
         if block:
             plt.show(block=True)
         else:
             plt.pause(0.01)
-
 
 if __name__ == '__main__':
     g = Graph()
