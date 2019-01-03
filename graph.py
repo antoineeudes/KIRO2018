@@ -4,8 +4,9 @@ import numpy as np
 from math import sqrt, ceil
 from math import exp
 import copy
-from config import PATH_REFERENCE_GRAPH, PATH_REFERENCE_GRAPH_FIGURE, PATH_SOLUTION_FILE
+from config import PATH_REFERENCE_GRAPH, PATH_REFERENCE_GRAPH_FIGURE, PATH_SOLUTION_FILE, PATH_START_SOLUTION_FILE, PATH_SAVE_SOLUTION_FILE
 from parser import *
+from shutil import copyfile
 
 plt.ion()
 
@@ -267,7 +268,7 @@ class Loop: # Represente une unique boucle
         '''Compute the cost of the loop plus chains'''
 
         cost = self.cost_loop_only()
-        
+
         for chain in self.loop_chains:
             cost += chain.cost()
 
@@ -940,7 +941,8 @@ class Solution:
 
         self.chains = chains
 
-    def write(self):
+    def write(self, init_overwrite = False, save = False):
+        print("Wirtting...")
         if not self.isAdmissible():
             print("NOT ADMISSIBLE")
             return None
@@ -970,6 +972,43 @@ class Solution:
                 fichier.write(line)
 
         fichier.close()
+
+        if init_overwrite:
+            copyfile(PATH_SOLUTION_FILE, PATH_START_SOLUTION_FILE)
+
+        if save:
+            copyfile(PATH_SOLUTION_FILE, PATH_SAVE_SOLUTION_FILE+str(self.cost())+".txt")
+
+        print("Writing done")
+
+    def read(self):
+        print("Reading...")
+
+        try:
+            fichier = open(PATH_START_SOLUTION_FILE, 'r')
+        except OSError as err:
+            print("Reading failed : {}".format(err))
+            return False # Fail to open
+
+        for line in fichier:
+            data = line.strip().split(' ')
+            if data[0] == 'b': #Boucle
+                data_int = [int(id) for id in data[1:]]
+                loop = Loop(self.graph, data_int, [])
+                self.loops.append(loop)
+
+        fichier.seek(0) #Retour au debut
+        for line in fichier:
+            data = line.strip().split(' ')
+            if data[0] == 'c': #Chaine
+                # Recherche de la boucle a laquelle est ratachee la chaine
+                parent_node_id = int(data[1])
+                for i in range(len(self.loops)):
+                    if parent_node_id in self.loops[i].elements_id:
+                        data_int = [int(id) for id in data[2:]]
+                        self.loops[i].create_chain(parent_node_id, data_int)
+        print("Reading done")
+        return True
 
     def show(self, block=True):
         print("Drawing...")

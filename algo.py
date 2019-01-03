@@ -138,13 +138,13 @@ class SimulatedAnnealing_repeated(SimulatedAnnealing_exp):
     def stopping_condition(self):
         return self.T < 1
 
-    def compute(self, show=True):
+    def compute(self, show=True, display_improvment=False):
         min_solution = copy.copy(self.min_solution)
         for i in range(self.nb_annealing):
             solution = super().compute(min_solution, show=False)
             self.T = self.T0 # On repart de la température initiale (pas fait automatiquement)
             if(solution.cost() < min_solution.cost()):
-                min_solution = copy.copy(solution)
+                min_solution = copy.deepcopy(solution)
             if(show):
                 print("{} {}".format(min_solution.cost(), i))
 
@@ -155,20 +155,25 @@ if __name__ == '__main__':
     g = graph.Graph()
     min_solution = Solution(g)
     min_solution.show()
-    min_solution.heuristique2()
+    if not min_solution.read(): #Essaie de lire une eventuelle solution de depart
+        min_solution.heuristique2() #Si non trouve la construit par l'heuristique
+    print(min_solution.cost())
     print("Is admissible : ", min_solution.isAdmissible())
 
     # S = SimulatedAnnealing_exp(min_solution, 0.1, 0.9999)
     # S = SimulatedAnnealing_exp(min_solution)
     # S = SimulatedAnnealing_exp(min_solution)
-    S = SimulatedAnnealing_log(min_solution, T0=100)
+
+    S = SimulatedAnnealing_repeated(min_solution, 100, 0.5, 10000)
+    # S = SimulatedAnnealing_log(min_solution, T0=100)
+
     # S = SimulatedAnnealing_repeated(min_solution, 1000, 0.3, 5000)
 
     min_solution.show()
     time0 = time.time()
     min_solution = S.compute(display_improvment = False)
     # min_solution.show()
-    min_solution.write()
+    min_solution.write(init_overwrite = True, save=True)
 
     print("Is admissible : {}".format(min_solution.isAdmissible()))
     print("Temps : {}".format(time.time()-time0))
