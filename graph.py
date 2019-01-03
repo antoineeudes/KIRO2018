@@ -267,7 +267,7 @@ class Loop: # Represente une unique boucle
         '''Compute the cost of the loop plus chains'''
 
         cost = self.cost_loop_only()
-        
+
         for chain in self.loop_chains:
             cost += chain.cost()
 
@@ -703,7 +703,6 @@ class Solution:
             return self.disturb_transfer_from_chain_to_chain()
         elif i >= 8:
             return self.disturb_in_loop()
-
         return self
 
     def disturb_between_chains(self):

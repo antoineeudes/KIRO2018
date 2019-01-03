@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 120:
+        if time.time()-self.start_time > 1200:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -114,6 +114,10 @@ class SimulatedAnnealing_log(SimulatedAnnealing):
         self.i += 1
         return self.C/log(self.i)
 
+    def ResetTemperature(self, T):
+        self.T = T
+        self.i = 1
+
     def stopping_condition(self):
         if self.previous_solution == self.min_solution:
             self.nb_stab_iterations += 1
@@ -166,7 +170,16 @@ if __name__ == '__main__':
 
     min_solution.show()
     time0 = time.time()
-    min_solution = S.compute(display_improvment = False)
+    min_solution = S.compute(display_improvment=False)
+    S.ResetTemperature(500)
+    min_solution = S.compute(display_improvment=False)
+    S.ResetTemperature(500)
+    min_solution = S.compute(display_improvment=False)
+    S.ResetTemperature(500)
+    min_solution = S.compute(display_improvment=False)
+    S.ResetTemperature(500)
+    min_solution = S.compute(display_improvment=False)
+
     # min_solution.show()
     min_solution.write()
 
