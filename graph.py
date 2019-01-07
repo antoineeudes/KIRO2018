@@ -588,10 +588,9 @@ class Solution:
         chain = self.getRandomChain()
         if chain == None:
             return self
-        new_solution = copy.deepcopy(self)
-
         if len(chain.elements_id)<=1:
             return self
+        new_solution = copy.deepcopy(self)
 
         i = random.randint(0, len(chain.elements_id)-1)
         j = random.randint(0, len(chain.elements_id)-1)
@@ -625,6 +624,25 @@ class Solution:
 
         del(chain[i_chain_element]) # Suppression dans la chaine
         return new_solution
+
+    # def disturb_remove_from_chain_to_another_loop(self):
+    #     idDestinationLoop = self.getRandomIdLoop()
+    #     if len(self.loops[idDestinationLoop].elements_id) > 30:
+    #         return self #Plus de place
+    #     idOriginLoop = self.getRandomIdLoop()
+    #     if len(self.loops[idOriginLoop].loop_chains) == 0:
+    #         return self # Aucune chaine dans la loop
+    #
+    #     new_solution = copy.deepcopy(self)
+    #     destinationLoop = new_solution.loops[idDestinationLoop]
+    #     originLoop = new_solution.loops[idOriginLoop]
+    #     i_chain = random.randint(0, len(originLoop.loop_chains)-1)
+    #     chain = originLoop.loop_chains[i_chain]
+    #     if len(chain.elements_id) == 0:
+    #         return self # chaine choisie vide
+    #     idElementInChain = random.randint(0, len(chain.elements_id))
+    #     elementInChain = chain.elements_id[idElementInChain]
+    #
 
     def disturb_create_new_chain(self):
         '''Cree une nouvelle chaine a partir d'un element de la loop'''
@@ -704,7 +722,6 @@ class Solution:
             return self.disturb_between_chains()
         elif i == 8:
             return self.disturb_in_loop()
-
         return self
 
     def disturb_between_chains(self):

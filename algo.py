@@ -177,7 +177,16 @@ if __name__ == '__main__':
 
     min_solution.show()
     time0 = time.time()
-    min_solution = S.compute(display_improvment = False)
+    min_solution = S.compute(display_improvment=False)
+    S.ResetTemperature(500)
+    min_solution = S.compute(display_improvment=False)
+    S.ResetTemperature(500)
+    min_solution = S.compute(display_improvment=False)
+    S.ResetTemperature(500)
+    min_solution = S.compute(display_improvment=False)
+    S.ResetTemperature(500)
+    min_solution = S.compute(display_improvment=False)
+
     # min_solution.show()
     min_solution.write(init_overwrite = True, save=True)
 

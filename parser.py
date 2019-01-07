@@ -31,5 +31,7 @@ def getEdges():
             distances[i, j] = int(file[j+nbNodes*i].strip())
     return distances
 
+
+
 if __name__=='__main__':
     print(getEdges())
