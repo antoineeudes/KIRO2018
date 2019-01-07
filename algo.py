@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 120:
+        if time.time()-self.start_time > 3000:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -67,7 +67,7 @@ class SimulatedAnnealing:
                         current_solution.show(block=False)
 
             if(show):
-                print("{} {}".format(self.min_solution.cost(), self.T))
+                print("{} {} {}".format(self.min_solution.cost(), current_solution.cost(), self.T))
             self.T = self.reduce_temperature(self.T)
 
         return self.min_solution
@@ -82,8 +82,8 @@ class SimulatedAnnealing_exp(SimulatedAnnealing):
     def reduce_temperature(self, T):
         return self.alpha*T
 
-    # def stopping_condition(self):
-    #     return self.T<1
+    def stopping_condition(self):
+        return self.T<1
 
     # def stopping_condition(self):
     #     if self.previous_solution == self.min_solution:
@@ -114,19 +114,19 @@ class SimulatedAnnealing_log(SimulatedAnnealing):
         self.i += 1
         return self.C/log(self.i)
 
-    def stopping_condition(self):
-        if self.previous_solution == self.min_solution:
-            self.nb_stab_iterations += 1
-        else:
-            self.nb_stab_iterations = 0
-
-        self.previous_solution = self.min_solution
-
-        if self.nb_stab_iterations >= 100000:
-            print("\n Stopped because stable \n")
-            self.nb_stab_iterations = 0
-            return True
-        return False
+    # def stopping_condition(self):
+    #     if self.previous_solution == self.min_solution:
+    #         self.nb_stab_iterations += 1
+    #     else:
+    #         self.nb_stab_iterations = 0
+    #
+    #     self.previous_solution = self.min_solution
+    #
+    #     if self.nb_stab_iterations >= 500000:
+    #         print("\n Stopped because stable \n")
+    #         self.nb_stab_iterations = 0
+    #         return True
+    #     return False
 
 
 class SimulatedAnnealing_repeated(SimulatedAnnealing_exp):
@@ -135,8 +135,14 @@ class SimulatedAnnealing_repeated(SimulatedAnnealing_exp):
         self.T0 = T
         super().__init__(s0, T, alpha)
 
-    def stopping_condition(self):
-        return self.T < 1
+    # def stopping_condition(self):
+    #     return self.T < 1
+
+    def timeout(self):
+        if time.time()-self.start_time > 20:
+            print("\n Stopped because timeout \n")
+            return True
+        return False
 
     def compute(self, show=True, display_improvment=False):
         min_solution = copy.copy(self.min_solution)
@@ -160,12 +166,12 @@ if __name__ == '__main__':
     print(min_solution.cost())
     print("Is admissible : ", min_solution.isAdmissible())
 
-    # S = SimulatedAnnealing_exp(min_solution, 0.1, 0.9999)
     # S = SimulatedAnnealing_exp(min_solution)
     # S = SimulatedAnnealing_exp(min_solution)
 
-    S = SimulatedAnnealing_repeated(min_solution, 100, 0.5, 10000)
-    # S = SimulatedAnnealing_log(min_solution, T0=100)
+    # S = SimulatedAnnealing_exp(min_solution, T=1000, alpha=0.9)
+    # S = SimulatedAnnealing_repeated(min_solution, 10000, 0.99, 50)
+    S = SimulatedAnnealing_log(min_solution, T0=80)
 
     # S = SimulatedAnnealing_repeated(min_solution, 1000, 0.3, 5000)
 

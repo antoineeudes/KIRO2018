@@ -529,8 +529,8 @@ class Solution:
         i = random.randint(0, len(new_solution.loops[idLoop].elements_id)-1)
         j = random.randint(0, len(new_solution.loops[idLoop].elements_id)-1)
         new_solution = new_solution.reverse(idLoop, i, j) #Aucune influence sur les chaines
-        if not new_solution.is_loop_admissible(new_solution.loops[idLoop]):
-            return self
+        # if not new_solution.is_loop_admissible(new_solution.loops[idLoop]):
+        #     return self
         # else:
         return new_solution
 
@@ -684,12 +684,12 @@ class Solution:
         return self
 
     def disturb(self):
-        i = random.randint(0, 10)
+        i = random.randint(0, 8)
 
         if i == 0:
-            return self.disturb_remove_from_chain_to_loop()
+            return self.disturb_transfer_from_chain_to_chain()
         elif i == 1:
-            return self.disturb_between_chains()
+            return self.disturb_remove_from_chain_to_loop()
         elif i == 2:
             return self.disturb_in_chain()
         elif i == 3:
@@ -701,8 +701,8 @@ class Solution:
         elif i == 6:
             return self.disturb_between_loops()
         elif i == 7:
-            return self.disturb_transfer_from_chain_to_chain()
-        elif i >= 8:
+            return self.disturb_between_chains()
+        elif i == 8:
             return self.disturb_in_loop()
 
         return self
@@ -731,28 +731,46 @@ class Solution:
             return self # Pas assez de chaines
 
         id_chain1 = random.randint(0, len(self.loops[id_loop].loop_chains)-1)
-        id_chain2 = random.randint(0, len(self.loops[id_loop].loop_chains)-1)
-
-        if id_chain1 == id_chain2:
-            return self
-
         if len(self.loops[id_loop].loop_chains[id_chain1].elements_id) == 0:
             return self
-        if len(self.loops[id_loop].loop_chains[id_chain2].elements_id) >= 5:
-            return self # Plus de place
 
-        new_solution = copy.deepcopy(self)
+        p = random.randint(0, 1)
+        if p == 0: # Creation d'une nouvelle chaine a partir de cet element
+            new_solution = copy.deepcopy(self)
+            id_loop2 = self.getRandomIdLoop()
+            loop2 = new_solution.loops[id_loop2]
+            chain1 = new_solution.loops[id_loop].loop_chains[id_chain1]
+            i1 = random.randint(0, len(chain1.elements_id)-1)
 
-        chain1 = new_solution.loops[id_loop].loop_chains[id_chain1]
-        chain2 = new_solution.loops[id_loop].loop_chains[id_chain2]
+            pos_anchor_point = random.randint(0, len(loop2.elements_id)-1)
+            loop2.create_chain(loop2.elements_id[pos_anchor_point], [chain1.elements_id[i1]])
+            del(chain1.elements_id[i1])
 
-        i1 = random.randint(0, len(chain1.elements_id)-1)
-        pos2 = random.randint(0, len(chain2.elements_id))
+            return new_solution
 
-        chain2.elements_id.insert(pos2, chain1.elements_id[i1])
-        del(chain1.elements_id[i1])
+        elif p == 1:
+            id_chain2 = random.randint(0, len(self.loops[id_loop].loop_chains)-1)
 
-        return new_solution
+            if id_chain1 == id_chain2:
+                return self
+
+            if len(self.loops[id_loop].loop_chains[id_chain2].elements_id) >= 5:
+                return self # Plus de place
+
+            new_solution = copy.deepcopy(self)
+
+            chain1 = new_solution.loops[id_loop].loop_chains[id_chain1]
+            chain2 = new_solution.loops[id_loop].loop_chains[id_chain2]
+
+            i1 = random.randint(0, len(chain1.elements_id)-1)
+            pos2 = random.randint(0, len(chain2.elements_id))
+
+            chain2.elements_id.insert(pos2, chain1.elements_id[i1])
+            del(chain1.elements_id[i1])
+
+            return new_solution
+
+        return self
 
 
     def disturb_anchor_point_in_loop(self):
@@ -1040,10 +1058,12 @@ class Solution:
         for id_terminal in self.graph.id_terminals:
             terminal = self.graph[id_terminal]
             plt.plot(terminal.x, terminal.y, marker='^', color='green')
+            plt.annotate(str(id_terminal), (terminal.x, terminal.y))
 
         for id_distrib in self.graph.id_distribs:
             distrib = self.graph[id_distrib]
             plt.plot(distrib.x, distrib.y, marker='s', color='blue')
+            plt.annotate(str(id_distrib), (distrib.x, distrib.y))
 
         print("Drawing done")
 
