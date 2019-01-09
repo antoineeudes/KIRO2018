@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 10:
+        if time.time()-self.start_time > 10400:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -144,7 +144,7 @@ class SimulatedAnnealing_repeated(SimulatedAnnealing_exp):
     #     return self.T < 1
 
     def timeout(self):
-        if time.time()-self.start_time > 20:
+        if time.time()-self.start_time > 14000:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -184,20 +184,20 @@ if __name__ == '__main__':
     time0 = time.time()
     min_solution = S.compute(display_improvment=False)
     min_solution.write(init_overwrite = True, save=True)
-    S.ResetTemperature(100)
-    min_solution = S.compute(display_improvment=False)
-    min_solution.write(init_overwrite = True, save=True)
-    S.ResetTemperature(100)
-    min_solution = S.compute(display_improvment=False)
-    min_solution.write(init_overwrite = True, save=True)
-    S.ResetTemperature(100)
-    min_solution = S.compute(display_improvment=False)
-    min_solution.write(init_overwrite = True, save=True)
-    S.ResetTemperature(100)
-    min_solution = S.compute(display_improvment=False)
+    # S.ResetTemperature(100)
+    # min_solution = S.compute(display_improvment=False)
+    # min_solution.write(init_overwrite = True, save=True)
+    # S.ResetTemperature(100)
+    # min_solution = S.compute(display_improvment=False)
+    # min_solution.write(init_overwrite = True, save=True)
+    # S.ResetTemperature(100)
+    # min_solution = S.compute(display_improvment=False)
+    # min_solution.write(init_overwrite = True, save=True)
+    # S.ResetTemperature(100)
+    # min_solution = S.compute(display_improvment=False)
 
     # min_solution.show()
-    min_solution.write(init_overwrite = True, save=True)
+    # min_solution.write(init_overwrite = True, save=True)
 
     print("Is admissible : {}".format(min_solution.isAdmissible()))
     print("Temps : {}".format(time.time()-time0))
