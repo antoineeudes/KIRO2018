@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 14400:
+        if time.time()-self.start_time > 57600:
 
             print("\n Stopped because timeout \n")
             return True
@@ -184,21 +184,21 @@ if __name__ == '__main__':
     # min_solution.show()
     time0 = time.time()
     min_solution = S.compute(display_improvment=False)
+    #min_solution.write(init_overwrite = True, save=True)
+    #S.ResetTemperature(100)
+    #min_solution = S.compute(display_improvment=False)
+    #min_solution.write(init_overwrite = True, save=True)
+    #S.ResetTemperature(100)
+    #min_solution = S.compute(display_improvment=False)
     min_solution.write(init_overwrite = True, save=True)
-    S.ResetTemperature(100)
-    min_solution = S.compute(display_improvment=False)
-    min_solution.write(init_overwrite = True, save=True)
-    S.ResetTemperature(100)
-    min_solution = S.compute(display_improvment=False)
-    min_solution.write(init_overwrite = True, save=True)
-    S.ResetTemperature(100)
-    min_solution = S.compute(display_improvment=False)
-    min_solution.write(init_overwrite = True, save=True)
-    S.ResetTemperature(100)
-    min_solution = S.compute(display_improvment=False)
+    #S.ResetTemperature(100)
+    #min_solution = S.compute(display_improvment=False)
+    #min_solution.write(init_overwrite = True, save=True)
+    #S.ResetTemperature(100)
+    #min_solution = S.compute(display_improvment=False)
 
     # min_solution.show()
-    min_solution.write(init_overwrite = True, save=True)
+    #min_solution.write(init_overwrite = True, save=True)
 
     print("Is admissible : {}".format(min_solution.isAdmissible()))
     print("Temps : {}".format(time.time()-time0))
