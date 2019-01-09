@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 10800:
+        if time.time()-self.start_time > 14400:
             print("\n Stopped because timeout \n")
             return True
         return False
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
     # S = SimulatedAnnealing_exp(min_solution, T=1000, alpha=0.9)
     # S = SimulatedAnnealing_repeated(min_solution, 10000, 0.99, 50)
-    S = SimulatedAnnealing_log(min_solution, T0=100)
+    S = SimulatedAnnealing_log(min_solution, T0=80)
 
     # S = SimulatedAnnealing_repeated(min_solution, 1000, 0.3, 5000)
 
