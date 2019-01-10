@@ -1075,12 +1075,12 @@ class Solution:
         for id_terminal in self.graph.id_terminals:
             terminal = self.graph[id_terminal]
             plt.plot(terminal.x, terminal.y, marker='^', color='green')
-            plt.annotate(str(id_terminal), (terminal.x, terminal.y))
+            #plt.annotate(str(id_terminal), (terminal.x, terminal.y))
 
         for id_distrib in self.graph.id_distribs:
             distrib = self.graph[id_distrib]
             plt.plot(distrib.x, distrib.y, marker='s', color='blue')
-            plt.annotate(str(id_distrib), (distrib.x, distrib.y))
+            #plt.annotate(str(id_distrib), (distrib.x, distrib.y))
 
         print("Drawing done")
 
