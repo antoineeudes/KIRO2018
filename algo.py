@@ -41,7 +41,7 @@ class SimulatedAnnealing:
         return False
 
     def timeout(self):
-        if time.time()-self.start_time > 100:
+        if time.time()-self.start_time > 3600:
 
             print("\n Stopped because timeout \n")
             return True
@@ -167,8 +167,8 @@ if __name__ == '__main__':
     g = graph.Graph()
     min_solution = Solution(g)
     #min_solution.show()
-    if not min_solution.read(): #Essaie de lire une eventuelle solution de depart
-        min_solution.heuristique2() #Si non trouve la construit par l'heuristique
+    #if not min_solution.read(): #Essaie de lire une eventuelle solution de depart
+    min_solution.heuristique2() #Si non trouve la construit par l'heuristique
 
 
 
@@ -180,7 +180,7 @@ if __name__ == '__main__':
 
     # S = SimulatedAnnealing_exp(min_solution, T=1000, alpha=0.9)
     # S = SimulatedAnnealing_repeated(min_solution, 10000, 0.99, 50)
-    S = SimulatedAnnealing_log(min_solution, T0=80)
+    S = SimulatedAnnealing_log(min_solution, T0=10)
     #min_solution.show()
     # S = SimulatedAnnealing_repeated(min_solution, 1000, 0.3, 5000)
 
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     #min_solution.write(init_overwrite = True, save=True)
     #S.ResetTemperature(100)
     #min_solution = S.compute(display_improvment=False)
-    min_solution.write(init_overwrite=False, save=True)
+    min_solution.write(init_overwrite=True, save=True)
     # S.ResetTemperature(100)
     # min_solution = S.compute(display_improvment=False)
     # min_solution.write(init_overwrite = True, save=True)
