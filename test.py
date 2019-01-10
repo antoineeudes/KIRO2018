@@ -70,6 +70,11 @@ class TestStringMethods(unittest.TestCase):
         for i in range(1000):
             sol = sol.disturb_anchor_point_in_other_loop()
         self.assertTrue(sol.isAdmissible())
+    def test_disturb_merge_loops(self):
+        sol = copy.copy(self.sol)
+        for i in range(1000):
+            sol = sol.disturb_merge_loops()
+        self.assertTrue(sol.isAdmissible())
 
     # def test_disturb_between_chains(self):
     #     sol = copy.copy(self.sol)
