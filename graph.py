@@ -475,8 +475,8 @@ class Solution:
 
         print("Heuristique 2 done")
 
-    # def cost_edge(self, id1, id2):
-    #     return self.graph.edges[id1, id2]
+    def cost_edge(self, id1, id2):
+        return self.graph.edges[id1, id2]
 
     # def cost_loop(self, loop):
     #     '''Compute the cost of a given loop'''
@@ -702,7 +702,7 @@ class Solution:
         return self
 
     def disturb(self):
-        i = random.randint(0, 8)
+        i = random.randint(0, 9)
 
         if i == 0:
             return self.disturb_transfer_from_chain_to_chain()
@@ -722,6 +722,8 @@ class Solution:
             return self.disturb_between_chains()
         elif i == 8:
             return self.disturb_in_loop()
+        elif i == 9:
+            return self.disturb_merge_loops()
         return self
 
     def disturb_between_chains(self):
@@ -827,6 +829,57 @@ class Solution:
 
         return new_solution
 
+    def find_closest_points_between_two_loops(self, idLoop1, idLoop2):
+        min_distance = float('inf')
+        point_id_in_loop1 = 0
+        point_id_in_loop2 = 0
+        for element_id_loop1 in self.loops[idLoop1].elements_id:
+            for element_id_loop2 in self.loops[idLoop2].elements_id:
+                distance = self.cost_edge(element_id_loop1, element_id_loop2)
+                if distance < min_distance:
+                    min_distance = distance
+                    point_id_in_loop1 = element_id_loop1
+                    point_id_in_loop2 = element_id_loop2
+        return point_id_in_loop1, point_id_in_loop2
+
+    def create_one_loop_from_two_loops(self, idLoop1, idLoop2):
+        merging_point_loop1, merging_point_loop2 = self.find_closest_points_between_two_loops(idLoop1, idLoop2)
+        position_merging_point_in_loop1_element_list = 0
+        position_merging_point_in_loop2_element_list = 0
+        len_loop1 = len(self.loops[idLoop1].elements_id)
+        len_loop2 = len(self.loops[idLoop2].elements_id)
+        while self.loops[idLoop1].elements_id[position_merging_point_in_loop1_element_list] != merging_point_loop1:
+            position_merging_point_in_loop1_element_list += 1
+        while self.loops[idLoop2].elements_id[position_merging_point_in_loop2_element_list] != merging_point_loop2:
+            position_merging_point_in_loop2_element_list += 1
+
+        # assert(position_merging_point_in_loop1_element_list<len_loop1)
+        # assert(position_merging_point_in_loop2_element_list<len_loop2)
+        element_id = []
+        for i in range(0, position_merging_point_in_loop1_element_list+1):
+            element_id.append(self.loops[idLoop1].elements_id[i])
+        for i in range(position_merging_point_in_loop2_element_list, len_loop2):
+            element_id.append(self.loops[idLoop2].elements_id[i])
+        for i in range(0, position_merging_point_in_loop2_element_list):
+            element_id.append(self.loops[idLoop2].elements_id[i])
+        for i in range(position_merging_point_in_loop1_element_list+1, len_loop1):
+            element_id.append(self.loops[idLoop1].elements_id[i])
+        loop_chains = self.loops[idLoop1].loop_chains + self.loops[idLoop2].loop_chains
+        return Loop(self.graph, element_id, loop_chains)
+
+
+    def disturb_merge_loops(self):
+        idLoop1 = self.getRandomIdLoop()
+        idLoop2 = self.getRandomIdLoop()
+        if idLoop1 == idLoop2:
+            return self
+        if len(self.loops[idLoop1].elements_id) + len(self.loops[idLoop2].elements_id) >= 30:
+            return self
+
+        new_solution = copy.deepcopy(self)
+        new_solution.loops[idLoop1] = self.create_one_loop_from_two_loops(idLoop1, idLoop2)
+        del new_solution.loops[idLoop2]
+        return new_solution
 
     def reverse(self, idLoop, i, j):
         n = len(self.loops[idLoop].elements_id)
